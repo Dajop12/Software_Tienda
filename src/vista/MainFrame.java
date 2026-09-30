@@ -247,8 +247,8 @@ public class MainFrame extends JFrame {
             boolean activo = e.getKey().equals(clave);
             Tema.botonSidebar(e.getValue(), activo);
             // Indicador activo: fondo + barra lateral implícita vía borde
-            e.getValue().setBackground(activo ? Tema.ACENTO : Tema.PANEL);
-            e.getValue().setForeground(activo ? Color.WHITE : Tema.TEXTO_SEC);
+            e.getValue().setBackground(activo ? Tema.PRIMARIO_BG : Tema.PANEL);
+            e.getValue().setForeground(activo ? Tema.BTN_TEXTO : Tema.NAV_TEXTO);
             e.getValue().setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, activo ? 3 : 0, 0, 0, activo ? Color.WHITE : Tema.PANEL),
                     BorderFactory.createEmptyBorder(10, activo ? 13 : 16, 10, 16)));

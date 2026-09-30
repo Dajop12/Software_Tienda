@@ -34,6 +34,21 @@ public class Tema {
     public static final Color AMARILLO_BG = new Color(251, 191, 36, 18);
     public static final Color INFO_BG = new Color(59, 130, 255, 18);
 
+    // ---- Botones: fondos oscuros + texto casi blanco (contraste AA ≥ 4.5:1) ----
+    // El ACENTO brillante se reserva para iconos/acentos; en botones se vería lavado.
+    public static final Color PRIMARIO_BG = new Color(28, 86, 201);
+    public static final Color PRIMARIO_HOVER = new Color(23, 72, 168);
+    public static final Color PRIMARIO_PRESSED = new Color(18, 58, 134);
+    public static final Color SEC_BG = new Color(46, 52, 70);
+    public static final Color SEC_HOVER = new Color(58, 65, 87);
+    public static final Color SEC_PRESSED = new Color(52, 58, 74);
+    public static final Color BTN_TEXTO = new Color(255, 255, 255);
+    public static final Color SEC_TEXTO = new Color(244, 246, 252);
+    public static final Color NAV_TEXTO = new Color(198, 205, 224);
+    public static final Color PELIGRO_FG = new Color(255, 133, 133);
+    public static final Color DISABLED_BG = new Color(58, 63, 82);
+    public static final Color DISABLED_FG = new Color(194, 201, 219);
+
     // ---- Espaciado / radio ----
     public static final int R_SM = 8, R_MD = 12, R_LG = 16;
     public static final int S_XS = 6, S_SM = 10, S_MD = 16, S_LG = 24;
@@ -48,32 +63,35 @@ public class Tema {
         if (b.getClientProperty("tema-primario") != null) return;
         b.putClientProperty("tema-primario", true);
         b.setFont(BOTON);
-        b.setForeground(Color.WHITE);
-        b.setBackground(ACENTO);
+        b.setForeground(BTN_TEXTO);
+        b.setBackground(PRIMARIO_BG);
         b.setFocusPainted(false);
         b.setFocusable(true);
+        // Garantiza que el LAF pinte NUESTRO fondo y no el nativo
+        b.setOpaque(true);
+        b.setContentAreaFilled(true);
+        b.setBorderPainted(true);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        b.setBorder(new RoundedBorder(ACENTO, R_MD, 0));
+        b.setBorder(new RoundedBorder(PRIMARIO_BG, R_MD, 0));
         b.setPreferredSize(new Dimension(0, 42));
-        // Estado deshabilitado legible
-        b.setDisabledIcon(null);
+        // Estado deshabilitado legible (gris claro sobre gris medio)
         b.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) {
-                if (b.isEnabled()) { b.setBackground(ACENTO_HOVER); b.setBorder(new RoundedBorder(ACENTO_HOVER, R_MD, 0)); }
+                if (b.isEnabled()) { b.setBackground(PRIMARIO_HOVER); b.setBorder(new RoundedBorder(PRIMARIO_HOVER, R_MD, 0)); }
             }
             @Override public void mouseExited(MouseEvent e) {
-                if (b.isEnabled()) { b.setBackground(ACENTO); b.setBorder(new RoundedBorder(ACENTO, R_MD, 0)); }
+                if (b.isEnabled()) { b.setBackground(PRIMARIO_BG); b.setBorder(new RoundedBorder(PRIMARIO_BG, R_MD, 0)); }
             }
             @Override public void mousePressed(MouseEvent e) {
-                if (b.isEnabled()) { b.setBackground(ACENTO_PRESSED); b.setBorder(new RoundedBorder(ACENTO_PRESSED, R_MD, 0)); }
+                if (b.isEnabled()) { b.setBackground(PRIMARIO_PRESSED); b.setBorder(new RoundedBorder(PRIMARIO_PRESSED, R_MD, 0)); }
             }
             @Override public void mouseReleased(MouseEvent e) {
-                if (b.isEnabled()) { b.setBackground(ACENTO_HOVER); b.setBorder(new RoundedBorder(ACENTO_HOVER, R_MD, 0)); }
+                if (b.isEnabled()) { b.setBackground(PRIMARIO_HOVER); b.setBorder(new RoundedBorder(PRIMARIO_HOVER, R_MD, 0)); }
             }
         });
         b.addPropertyChangeListener("enabled", e -> {
-            if (!b.isEnabled()) { b.setBackground(new Color(55, 60, 76)); b.setForeground(TEXTO_SEC); }
-            else { b.setBackground(ACENTO); b.setForeground(Color.WHITE); }
+            if (!b.isEnabled()) { b.setBackground(DISABLED_BG); b.setForeground(DISABLED_FG); }
+            else { b.setBackground(PRIMARIO_BG); b.setForeground(BTN_TEXTO); }
         });
     }
 
@@ -81,23 +99,34 @@ public class Tema {
         if (b.getClientProperty("tema-sec") != null) return;
         b.putClientProperty("tema-sec", true);
         b.setFont(BOTON);
-        b.setForeground(TEXTO);
-        b.setBackground(new Color(45, 50, 65));
+        b.setForeground(SEC_TEXTO);
+        b.setBackground(SEC_BG);
         b.setFocusPainted(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        b.setBorder(new RoundedBorder(new Color(45, 50, 65), R_MD, 0));
+        b.setOpaque(true);
+        b.setContentAreaFilled(true);
+        b.setBorderPainted(true);
+        b.setBorder(new RoundedBorder(SEC_BG, R_MD, 0));
         b.setPreferredSize(new Dimension(0, 38));
         b.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) { if (b.isEnabled()) b.setBackground(TARJETA_HOVER); }
-            @Override public void mouseExited(MouseEvent e) { if (b.isEnabled()) b.setBackground(new Color(45, 50, 65)); }
-            @Override public void mousePressed(MouseEvent e) { if (b.isEnabled()) b.setBackground(new Color(52, 58, 74)); }
+            @Override public void mouseEntered(MouseEvent e) { if (b.isEnabled()) b.setBackground(SEC_HOVER); }
+            @Override public void mouseExited(MouseEvent e) { if (b.isEnabled()) b.setBackground(SEC_BG); }
+            @Override public void mousePressed(MouseEvent e) { if (b.isEnabled()) b.setBackground(SEC_PRESSED); }
+        });
+        b.addPropertyChangeListener("enabled", e -> {
+            if (!b.isEnabled()) { b.setBackground(DISABLED_BG); b.setForeground(DISABLED_FG); }
+            else { b.setBackground(SEC_BG); b.setForeground(SEC_TEXTO); }
         });
     }
 
     /** Botón de peligro (eliminar) con affordance clara. */
     public static void botonPeligro(JButton b) {
         botonSecundario(b);
-        b.setForeground(ROJO);
+        b.setForeground(PELIGRO_FG);
+        b.addPropertyChangeListener("enabled", e -> {
+            if (!b.isEnabled()) { b.setForeground(DISABLED_FG); }
+            else { b.setForeground(PELIGRO_FG); }
+        });
     }
 
     public static void botonSidebar(JButton b, boolean activo) {
@@ -108,12 +137,13 @@ public class Tema {
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createEmptyBorder(10, 16, 10, 16));
         b.setOpaque(true);
+        b.setContentAreaFilled(true);
         if (activo) {
-            b.setBackground(ACENTO);
-            b.setForeground(Color.WHITE);
+            b.setBackground(PRIMARIO_BG);
+            b.setForeground(BTN_TEXTO);
         } else {
             b.setBackground(PANEL);
-            b.setForeground(TEXTO_SEC);
+            b.setForeground(NAV_TEXTO);
         }
     }
 
@@ -209,11 +239,11 @@ public class Tema {
         else ini = (partes[0].substring(0, 1) + partes[1].substring(0, 1)).toUpperCase();
         JLabel l = new JLabel(ini, SwingConstants.CENTER);
         l.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        l.setForeground(Color.WHITE);
-        l.setBackground(ACENTO);
+        l.setForeground(BTN_TEXTO);
+        l.setBackground(PRIMARIO_BG);
         l.setOpaque(true);
         l.setPreferredSize(new Dimension(38, 38));
-        l.setBorder(new RoundedBorder(ACENTO, 19, 0));
+        l.setBorder(new RoundedBorder(PRIMARIO_BG, 19, 0));
         return l;
     }
 
@@ -225,6 +255,10 @@ public class Tema {
         UIManager.put("OptionPane.background", PANEL);
         UIManager.put("OptionPane.messageForeground", TEXTO);
         UIManager.put("Panel.background", PANEL);
+        // Texto deshabilitado legible (por defecto el LAF lo pone casi invisible)
+        UIManager.put("Button.disabledText", DISABLED_FG);
+        UIManager.put("Button.disabledBackground", DISABLED_BG);
+        UIManager.put("ComboBox.disabledForeground", DISABLED_FG);
     }
 
     /** Tarjeta KPI: titulo arriba, valor grande, detalle pequeño. */
