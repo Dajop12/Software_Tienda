@@ -5,7 +5,7 @@ import javax.swing.*;
 /**
  * Super App v2.0 — Punto de entrada.
  * Arquitectura MVC por capas:
- *  dominio/  -> entidades puras (Usuario, Producto, Alumno, Venta)
+ *  dominio/  -> entidades puras (Usuario, Producto, Venta, Cliente, Turno)
  *  datos/    -> GestorDatos (archivos data/*.dat)
  *  servicio/ -> AuthService (login), Bitacora (log)
  *  vista/    -> Tema + Login + Main + 6 paneles

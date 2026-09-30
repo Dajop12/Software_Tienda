@@ -1,18 +1,36 @@
-## Getting Started
+# Software Tienda (minimarket) — operación diaria
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+## 1. Abrir
+```powershell
+$files = (Get-ChildItem -Recurse -Filter "*.java" -Path "src").FullName
+javac -encoding UTF-8 -d bin $files
+java -cp bin App
+```
+Entra `admin/1234` (cám adv/res/reset.
 
-## Folder Structure
+## 2. Turno (obligatorio para vender)
+Ventas > Abrir turno. Vende. Al final: Cerrar turno (imprime ventas + ganancia).
 
-The workspace contains two folders by default, where:
+## 3. Vender / fiado / anular
+CONTADO o CREDITO (elige cliente). Fiado suma deuda; Clientes/Fiado abona.
+Historial > Anular folio (pide motivo, devuelve stock, revierte fiado).
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+## 4. Inventario
+Productos: agregar/editar (costo y stock-mín solo JEFE), Entrada = factura
+proveedor con vencimiento, Kardex = entradas/salidas, columna Vence
+(rojo vencido, amarillo ≤30d).
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+## 5. Cierre del día
+Config > Reporte día (imprimir): ventas, anuladas, por caja, top 5, deuda.
+Config > Backup cifrado (guarda `backup/*.enc`). Sync USB para 2 cajas:
+Exportar en A > Importar en B (no duplica).
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+## 6. Jefe en celular
+Config > Iniciar API :8080. APK apunta a `http://IP-PC:8080` (o HTTPS VPS).
+Endpoints con token: `/login, /stock-bajo, /ventas-hoy, /deudas, /vencimientos, /reporte`.
+Push FCM con `FCM_SERVER_KEY` + token registrado. Cola en `data/push-cola.log`.
 
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+## Roles
+ADMIN todo (costos, entradas, ganancias, deudas, usuarios).
+VENDEDOR vende + productos sin costo. CONSULTA solo ver.
+API: VENDEDOR+ stock/ventas, solo JEFE deudas/push.

@@ -33,7 +33,7 @@ public class BackupService {
         // 1) zip data/*.dat en memoria
         java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(bos)) {
-            for (String f : new String[]{"usuarios.dat", "productos.dat", "alumnos.dat", "ventas.dat",
+            for (String f : new String[]{"usuarios.dat", "productos.dat", "ventas.dat",
                     "proveedores.dat", "movimientos.dat", "clientes.dat", "turnos.dat", "compras.dat"}) {
                 Path p = Paths.get("data/" + f);
                 if (!Files.exists(p)) continue;

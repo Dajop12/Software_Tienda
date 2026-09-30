@@ -59,7 +59,7 @@ public class LoginFrame extends JFrame {
 
         JLabel feats = new JLabel("<html><p style='color:#E8EAF6; font-size:13px'>"
                 + "✔ Dashboard con gráficas<br>✔ Productos y punto de venta<br>"
-                + "✔ Alumnos y calificaciones<br>✔ Usuarios y roles<br>✔ Guarda en archivos locales</p></html>");
+                + "✔ Fiado, turnos y cierre<br>✔ Usuarios y roles<br>✔ Guarda en archivos locales</p></html>");
         g.gridy = 2; g.insets = new Insets(0, 0, 24, 0);
         p.add(feats, g);
 

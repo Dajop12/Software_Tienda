@@ -86,8 +86,8 @@ public class DashboardPanel extends JPanel {
                         : String.format("Inventario $%.0f", g.valorInventario()), Tema.ACENTO));
         kpis.add(Tema.tarjetaKpi("⚠", "STOCK BAJO", String.valueOf(g.stockBajoCount()),
                 "productos con < 5 piezas", g.stockBajoCount() > 0 ? Tema.AMARILLO : Tema.VERDE));
-        kpis.add(Tema.tarjetaKpi("🎓", "ALUMNOS", String.valueOf(g.getAlumnos().size()),
-                g.getUsuarios().size() + " usuarios en sistema", new Color(167, 139, 250)));
+        kpis.add(Tema.tarjetaKpi("🤝", "FIADO", String.format("$%.0f", g.deudasTotales()),
+                g.getClientes().size() + " clientes a crédito", g.deudasTotales() > 0 ? Tema.AMARILLO : Tema.VERDE));
         kpis.revalidate(); kpis.repaint();
 
         grafica.setDatos(g.ventasUltimos7Dias(), g.etiquetasUltimos7Dias());

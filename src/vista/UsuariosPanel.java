@@ -43,7 +43,7 @@ public class UsuariosPanel extends JPanel {
         sp.setBorder(new Tema.RoundedBorder(Tema.BORDE, 12, 1));
         add(sp, BorderLayout.CENTER);
 
-        JLabel nota = new JLabel("Roles: ADMIN = todo • VENDEDOR = ventas/productos/alumnos • CONSULTA = solo ver. No puedes eliminarte a ti mismo.");
+        JLabel nota = new JLabel("Roles: ADMIN = todo • VENDEDOR = ventas/productos • CONSULTA = solo ver. No puedes eliminarte a ti mismo.");
         nota.setForeground(Tema.TEXTO_SEC);
         nota.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         add(nota, BorderLayout.SOUTH);

@@ -25,19 +25,17 @@ public class MainFrame extends JFrame {
     private final Map<String, JButton> nav = new LinkedHashMap<>();
     private final Map<String, String> titulos = Map.of(
             "DASH", "Dashboard", "PROD", "Productos", "VENT", "Punto de venta",
-            "ALUM", "Alumnos", "USER", "Usuarios", "CONF", "Configuración");
+            "USER", "Usuarios", "CONF", "Configuración");
     private final Map<String, String> subtitulos = Map.of(
             "DASH", "Resumen del negocio en tiempo real",
             "PROD", "Inventario, precios y stock",
             "VENT", "Cobra rápido y descuenta stock solo",
-            "ALUM", "Matrícula, carrera y promedio",
             "USER", "Roles y acceso (solo ADMIN)",
             "CONF", "Respaldo, exportación y bitácora");
 
     private DashboardPanel dashboard;
     private ProductosPanel productos;
     private VentasPanel ventas;
-    private AlumnosPanel alumnos;
     private UsuariosPanel usuarios;
     private ConfigPanel config;
 
@@ -57,14 +55,12 @@ public class MainFrame extends JFrame {
         dashboard = new DashboardPanel();
         productos = new ProductosPanel();
         ventas = new VentasPanel(usuario);
-        alumnos = new AlumnosPanel();
         usuarios = new UsuariosPanel(usuario);
         config = new ConfigPanel(this);
 
         centro.add(dashboard, "DASH");
         centro.add(productos, "PROD");
         centro.add(ventas, "VENT");
-        centro.add(alumnos, "ALUM");
         centro.add(usuarios, "USER");
         centro.add(config, "CONF");
         add(centro, BorderLayout.CENTER);
@@ -148,9 +144,8 @@ public class MainFrame extends JFrame {
         agregarNav(s, "DASH", "📊  Dashboard", "Ver resumen (Ctrl+1)");
         agregarNav(s, "PROD", "📦  Productos", "Gestionar inventario (Ctrl+2)");
         agregarNav(s, "VENT", "🛒  Punto de venta", "Cobrar (Ctrl+3)");
-        agregarNav(s, "ALUM", "🎓  Alumnos", "Gestionar alumnos (Ctrl+4)");
-        agregarNav(s, "USER", "👥  Usuarios", "Solo ADMIN (Ctrl+5)");
-        agregarNav(s, "CONF", "⚙️  Configuración", "Respaldo y bitácora (Ctrl+6)");
+        agregarNav(s, "USER", "👥  Usuarios", "Solo ADMIN (Ctrl+4)");
+        agregarNav(s, "CONF", "⚙️  Configuración", "Respaldo y bitácora (Ctrl+5)");
         s.add(Box.createVerticalGlue());
 
         JButton salir = new JButton("⏻  Cerrar sesión");
@@ -223,9 +218,9 @@ public class MainFrame extends JFrame {
         return st;
     }
 
-    /** Atajos Ctrl+1..6: navegación sin mouse (estándar enterprise). */
+    /** Atajos Ctrl+1..5: navegación sin mouse (estándar enterprise). */
     private void instalarAtajos() {
-        String[] claves = {"DASH", "PROD", "VENT", "ALUM", "USER", "CONF"};
+        String[] claves = {"DASH", "PROD", "VENT", "USER", "CONF"};
         for (int i = 0; i < claves.length; i++) {
             final String c = claves[i];
             getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -264,7 +259,6 @@ public class MainFrame extends JFrame {
             case "DASH" -> dashboard.refrescar();
             case "PROD" -> productos.refrescar();
             case "VENT" -> ventas.refrescar();
-            case "ALUM" -> alumnos.refrescar();
             case "USER" -> usuarios.refrescar();
             case "CONF" -> config.refrescar();
         }
@@ -281,8 +275,8 @@ public class MainFrame extends JFrame {
         if (bProd != null) bProd.setText(bajos > 0 ? "📦  Productos (" + bajos + " ⚠)" : "📦  Productos");
         String alerta = bajos > 0 ? "  •  ⚠ " + bajos + " stock bajo" : "  •  ✔ stock OK";
         if (venc > 0) alerta += "  •  ⏳ " + venc + " vencen ≤30d";
-        lblStatus.setText(String.format("%d productos  •  %d ventas  •  %d alumnos  •  %d usuarios%s   —   %s",
-                g.getProductos().size(), g.getVentas().size(), g.getAlumnos().size(),
+        lblStatus.setText(String.format("%d productos  •  %d ventas  •  %d usuarios%s   —   %s",
+                g.getProductos().size(), g.getVentas().size(),
                 g.getUsuarios().size(), alerta, lblTitulo.getText()));
         lblStatus.setForeground(bajos > 0 || venc > 0 ? Tema.AMARILLO : Tema.TEXTO_SEC);
     }

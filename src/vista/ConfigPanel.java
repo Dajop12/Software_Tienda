@@ -1,7 +1,6 @@
 package vista;
 
 import datos.GestorDatos;
-import dominio.Alumno;
 import dominio.Producto;
 import dominio.Venta;
 import infraestructura.MiniApiServer;
@@ -46,11 +45,10 @@ public class ConfigPanel extends JPanel {
 
         JButton bExpProd = new JButton("⬇ Exportar productos CSV");
         JButton bExpVent = new JButton("⬇ Exportar ventas CSV");
-        JButton bExpAlum = new JButton("⬇ Exportar alumnos CSV");
         JButton bExpGan = new JButton("⬇ Ganancia por producto CSV");
         JButton bExpAud = new JButton("⬇ Auditoría CSV");
         JButton bReset = new JButton("⟲ Restaurar datos demo");
-        for (JButton b : new JButton[]{bExpProd, bExpVent, bExpAlum, bExpGan, bExpAud, bReset}) {
+        for (JButton b : new JButton[]{bExpProd, bExpVent, bExpGan, bExpAud, bReset}) {
             Tema.botonSecundario(b);
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
             b.setMaximumSize(new Dimension(Short.MAX_VALUE, 40));
@@ -59,7 +57,6 @@ public class ConfigPanel extends JPanel {
         }
         bExpProd.addActionListener(e -> exportarProductos());
         bExpVent.addActionListener(e -> exportarVentas());
-        bExpAlum.addActionListener(e -> exportarAlumnos());
         bExpGan.addActionListener(e -> exportarGanancias());
         bExpGan.setEnabled(servicio.Sesion.esJefe());
         bExpGan.setToolTipText(servicio.Sesion.esJefe() ? "Reporte de rentabilidad" : "Solo JEFE");
@@ -169,7 +166,6 @@ public class ConfigPanel extends JPanel {
         GestorDatos g = GestorDatos.getInstancia();
         lblInfo.setText("<html>Usuarios: " + g.getUsuarios().size()
                 + " &nbsp;•&nbsp; Productos: " + g.getProductos().size()
-                + "<br>Alumnos: " + g.getAlumnos().size()
                 + " &nbsp;•&nbsp; Ventas: " + g.getVentas().size()
                 + "<br>API: " + (MiniApiServer.corriendo() ? "🟢 :8080 para APK" : "🔴 apagada")
                 + " &nbsp;•&nbsp; Push en cola: " + PushService.pendientes(1000).size()
@@ -223,21 +219,6 @@ public class ConfigPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Guardado en " + ruta + "\nHoy ganancia: $"
                     + String.format("%.2f", GestorDatos.getInstancia().gananciaHoy()),
                     "OK", JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void exportarAlumnos() {
-        String ruta = "data/alumnos.csv";
-        try (PrintWriter pw = new PrintWriter(new FileWriter(ruta))) {
-            pw.println("id,matricula,nombre,carrera,promedio,estado");
-            for (Alumno a : GestorDatos.getInstancia().getAlumnos()) {
-                pw.printf("%s,%s,\"%s\",\"%s\",%.1f,%s%n",
-                        a.getId(), a.getMatricula(), a.getNombre(), a.getCarrera(), a.getPromedio(), a.getEstado());
-            }
-            Bitacora.registrar("Exportó alumnos a " + ruta);
-            JOptionPane.showMessageDialog(this, "Guardado en " + ruta, "OK", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }

@@ -18,7 +18,6 @@ public class GestorDatos {
 
     private List<Usuario> usuarios = new ArrayList<>();
     private List<Producto> productos = new ArrayList<>();
-    private List<Alumno> alumnos = new ArrayList<>();
     private List<Venta> ventas = new ArrayList<>();
     private List<Proveedor> proveedores = new ArrayList<>();
     private List<MovimientoInventario> movimientos = new ArrayList<>();
@@ -41,7 +40,6 @@ public class GestorDatos {
     // ===== getters (listas vivas, modificar + guardarTodo) =====
     public List<Usuario> getUsuarios() { return usuarios; }
     public List<Producto> getProductos() { return productos; }
-    public List<Alumno> getAlumnos() { return alumnos; }
     public List<Venta> getVentas() { return ventas; }
     public List<Proveedor> getProveedores() { return proveedores; }
     public List<MovimientoInventario> getMovimientos() { return movimientos; }
@@ -73,18 +71,17 @@ public class GestorDatos {
     private void cargarTodo() {
         List<Usuario> u = leer("data/usuarios.dat");
         List<Producto> p = leer("data/productos.dat");
-        List<Alumno> a = leer("data/alumnos.dat");
         List<Venta> v = leer("data/ventas.dat");
         List<Proveedor> pr = leer("data/proveedores.dat");
         List<MovimientoInventario> m = leer("data/movimientos.dat");
         List<Cliente> cl = leer("data/clientes.dat");
         List<TurnoCaja> tu = leer("data/turnos.dat");
         List<CompraProveedor> co = leer("data/compras.dat");
-        if (u == null || p == null || a == null || v == null) {
+        if (u == null || p == null || v == null) {
             crearDemo();
             guardarTodo();
         } else {
-            usuarios = u; productos = p; alumnos = a; ventas = v;
+            usuarios = u; productos = p; ventas = v;
             proveedores = pr == null ? new ArrayList<>() : pr;
             movimientos = m == null ? new ArrayList<>() : m;
             clientes = cl == null ? new ArrayList<>() : cl;
@@ -93,7 +90,7 @@ public class GestorDatos {
             migrarProductos(); // compatibilidad .dat viejos (F1)
         }
         Bitacora.registrar("Datos cargados: " + usuarios.size() + " usuarios, "
-                + productos.size() + " productos, " + alumnos.size() + " alumnos, " + ventas.size() + " ventas.");
+                + productos.size() + " productos, " + ventas.size() + " ventas.");
     }
 
     /** Migra productos viejos sin costo/stockMin/barras. */
@@ -114,7 +111,6 @@ public class GestorDatos {
     public void guardarTodo() {
         escribir("data/usuarios.dat", usuarios);
         escribir("data/productos.dat", productos);
-        escribir("data/alumnos.dat", alumnos);
         escribir("data/ventas.dat", ventas);
         escribir("data/proveedores.dat", proveedores);
         escribir("data/movimientos.dat", movimientos);
@@ -157,14 +153,6 @@ public class GestorDatos {
         clientes.add(new Cliente("C-002", "Tienda La Esquina", "555-0202"));
         turnos = new ArrayList<>();
         compras = new ArrayList<>();
-
-        alumnos = new ArrayList<>();
-        alumnos.add(new Alumno("A-001", "María López", "MAT-1001", "Sistemas", 9.2));
-        alumnos.add(new Alumno("A-002", "Juan Pérez", "MAT-1002", "Sistemas", 7.5));
-        alumnos.add(new Alumno("A-003", "Ana Torres", "MAT-1003", "Contaduría", 6.4));
-        alumnos.add(new Alumno("A-004", "Luis García", "MAT-1004", "Derecho", 8.1));
-        alumnos.add(new Alumno("A-005", "Sofía Ruiz", "MAT-1005", "Medicina", 5.8));
-        alumnos.add(new Alumno("A-006", "Diego Cruz", "MAT-1006", "Sistemas", 8.8));
 
         ventas = new ArrayList<>();
         // 5 ventas en los últimos días para que la gráfica se vea viva
