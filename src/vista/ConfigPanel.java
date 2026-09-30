@@ -88,7 +88,10 @@ public class ConfigPanel extends JPanel {
         JButton bPush = new JButton("Ver cola push");
         JButton bBack = new JButton("🔒 Backup cifrado");
         JButton bRest = new JButton("↩ Restaurar backup");
-        for (JButton b : new JButton[]{bApi, bPush, bBack, bRest}) {
+        JButton bSyncE = new JButton("⇄ Sync exportar (USB)");
+        JButton bSyncI = new JButton("⇄ Sync importar (USB)");
+        JButton bRep = new JButton("📊 Reporte día (imprimir)");
+        for (JButton b : new JButton[]{bApi, bPush, bBack, bRest, bSyncE, bSyncI, bRep}) {
             Tema.botonSecundario(b);
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
             b.setMaximumSize(new Dimension(Short.MAX_VALUE, 40));
@@ -121,6 +124,20 @@ public class ConfigPanel extends JPanel {
                     "Confirmar", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
             try { servicio.BackupService.restaurar(sel); Toast.exito(this, "Restaurado. Reinicia la app."); }
             catch (Exception ex) { Toast.error(this, "Falló: " + ex.getMessage()); }
+        });
+        bSyncE.addActionListener(e -> {
+            try { Toast.exito(this, "Sync: " + servicio.SyncService.exportar() + " (pásalo por USB)"); }
+            catch (Exception ex) { Toast.error(this, "Falló: " + ex.getMessage()); }
+        });
+        bSyncI.addActionListener(e -> {
+            JFileChooser fc = new JFileChooser("sync");
+            if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            try { Toast.exito(this, "Importado: " + servicio.SyncService.importar(fc.getSelectedFile().getPath())); frame.mostrar("DASH"); }
+            catch (Exception ex) { Toast.error(this, "Falló: " + ex.getMessage()); }
+        });
+        bRep.addActionListener(e -> {
+            TicketPrinter.mostrarTicket(this, "Reporte del día",
+                    GestorDatos.getInstancia().reporteDiaTicket());
         });
         grid.add(izq);
 

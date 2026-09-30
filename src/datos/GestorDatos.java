@@ -518,6 +518,90 @@ public class GestorDatos {
         return r;
     }
 
+    /** F14: reporte del día consolidado (multi-caja tras sync). */
+    public String reporteDiaTicket() {
+        String hoy = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        double tv = 0, tg = 0;
+        int n = 0, anul = 0;
+        Map<String, double[]> porCaja = new LinkedHashMap<>(); // vendedor -> [ventas, ganancia, n]
+        Map<String, int[]> top = new LinkedHashMap<>(); // producto -> [uds]
+        Map<String, String> nombres = new LinkedHashMap<>();
+        for (Venta v : ventas) {
+            if (!v.getFecha().startsWith(hoy)) continue;
+            if (v.isCancelada()) { anul++; continue; }
+            n++; tv += v.getTotal(); tg += v.getGanancia();
+            double[] a = porCaja.computeIfAbsent(v.getVendedor(), k -> new double[3]);
+            a[0] += v.getTotal(); a[1] += v.getGanancia(); a[2]++;
+            for (Venta.Item it : v.getItems()) {
+                int[] u = top.computeIfAbsent(it.productoId, k -> new int[1]);
+                u[0] += it.cantidad;
+                nombres.putIfAbsent(it.productoId, it.nombre);
+            }
+        }
+        StringBuilder sb = new StringBuilder("📊 REPORTE " + hoy + "\n--------------------------\n");
+        sb.append("Ventas: ").append(n).append("  Anuladas: ").append(anul).append("\n");
+        sb.append("TOTAL: $").append(String.format("%.2f", tv)).append("\n");
+        sb.append("GANANCIA: $").append(String.format("%.2f", tg)).append("\n");
+        sb.append("--------------------------\nPOR CAJA:\n");
+        if (porCaja.isEmpty()) sb.append("(sin ventas)\n");
+        for (Map.Entry<String, double[]> e : porCaja.entrySet()) {
+            sb.append(String.format("%s: %d x $%.2f / g $%.2f\n", e.getKey(),
+                    (int) e.getValue()[2], e.getValue()[0], e.getValue()[1]));
+        }
+        sb.append("--------------------------\nTOP (uds):\n");
+        top.entrySet().stream().sorted((a, b) -> Integer.compare(b.getValue()[0], a.getValue()[0])).limit(5)
+                .forEach(e -> sb.append(String.format("%s x%d\n", nombres.get(e.getKey()), e.getValue()[0])));
+        sb.append("--------------------------\nDeuda total: $").append(String.format("%.2f", deudasTotales()));
+        return sb.toString();
+    }
+
+    /** F15: mismo reporte en JSON para la APK (deudas solo si jefe). */
+    public String reporteDiaJSON(boolean jefe) {
+        String hoy = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        double tv = 0, tg = 0;
+        int n = 0, anul = 0;
+        Map<String, double[]> porCaja = new LinkedHashMap<>();
+        Map<String, int[]> top = new LinkedHashMap<>();
+        Map<String, String> nombres = new LinkedHashMap<>();
+        for (Venta v : ventas) {
+            if (!v.getFecha().startsWith(hoy)) continue;
+            if (v.isCancelada()) { anul++; continue; }
+            n++; tv += v.getTotal(); tg += v.getGanancia();
+            double[] a = porCaja.computeIfAbsent(v.getVendedor(), k -> new double[3]);
+            a[0] += v.getTotal(); a[1] += v.getGanancia(); a[2]++;
+            for (Venta.Item it : v.getItems()) {
+                int[] u = top.computeIfAbsent(it.productoId, k -> new int[1]);
+                u[0] += it.cantidad;
+                nombres.putIfAbsent(it.productoId, it.nombre);
+            }
+        }
+        StringBuilder sb = new StringBuilder("{\"fecha\":\"" + hoy + "\",\"ventas\":" + n
+                + ",\"anuladas\":" + anul + ",\"total\":" + String.format("%.2f", tv)
+                + ",\"ganancia\":" + String.format("%.2f", jefe ? tg : 0)
+                + ",\"deudas\":" + String.format("%.2f", jefe ? deudasTotales() : 0)
+                + ",\"porCaja\":[");
+        boolean p = true;
+        for (Map.Entry<String, double[]> e : porCaja.entrySet()) {
+            if (!p) sb.append(",");
+            p = false;
+            sb.append("{\"vendedor\":\"").append(e.getKey()).append("\",\"n\":").append((int) e.getValue()[2])
+                    .append(",\"total\":").append(String.format("%.2f", e.getValue()[0]))
+                    .append(",\"ganancia\":").append(String.format("%.2f", jefe ? e.getValue()[1] : 0)).append("}");
+        }
+        sb.append("],\"top\":[");
+        boolean q = true;
+        List<Map.Entry<String, int[]>> tops = new ArrayList<>(top.entrySet());
+        tops.sort((a, b) -> Integer.compare(b.getValue()[0], a.getValue()[0]));
+        for (int i = 0; i < Math.min(5, tops.size()); i++) {
+            if (!q) sb.append(",");
+            q = false;
+            sb.append("{\"id\":\"").append(tops.get(i).getKey()).append("\",\"nombre\":\"")
+                    .append(nombres.get(tops.get(i).getKey()).replace("\"", "'"))
+                    .append("\",\"uds\":").append(tops.get(i).getValue()[0]).append("}");
+        }
+        return sb.append("]}").toString();
+    }
+
     public static String nuevoId(String prefijo) {
         return prefijo + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
     }

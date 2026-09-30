@@ -262,10 +262,12 @@ public class VentasPanel extends JPanel {
             Toast.exito(this, "Turno abierto. A vender.");
         } else {
             TurnoCaja c = g.cerrarTurno(vendedor.getUsername());
-            JOptionPane.showMessageDialog(this,
-                    "Turno " + c.getId() + " cerrado.\nVentas: $" + String.format("%.2f", c.getTotalVentas())
-                    + "\nGanancia: $" + String.format("%.2f", c.getTotalGanancia()),
-                    "Cierre de caja", JOptionPane.INFORMATION_MESSAGE);
+            String ticket = "🔒 CIERRE " + c.getId() + "\nCajero: " + c.getVendedor()
+                    + "\nApertura: " + c.getApertura() + "\nCierre: " + c.getCierre()
+                    + "\n--------------------------\nVENTAS: $" + String.format("%.2f", c.getTotalVentas())
+                    + (servicio.Sesion.esJefe() ? "\nGANANCIA: $" + String.format("%.2f", c.getTotalGanancia()) : "")
+                    + "\n--------------------------";
+            TicketPrinter.mostrarTicket(this, "Cierre de caja", ticket);
             Toast.exito(this, "Turno cerrado.");
         }
         refrescar();

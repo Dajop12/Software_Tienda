@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(b)
         val col = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(32, 32, 32, 32) }
         val txtBase = EditText(this).apply { hint = "https://tu-tienda.com"; setText(base) }
-        val btn = Button(this).apply { text = "Ver stock bajo + ventas + vencen" }
+        val btn = Button(this).apply { text = "Ver stock + ventas + vencen + reporte" }
         val out = TextView(this)
         // 3C: registra token para push con app cerrada
         FirebaseMessaging.getInstance().token.addOnSuccessListener { t ->
@@ -24,8 +24,8 @@ class MainActivity : AppCompatActivity() {
         }
         btn.setOnClickListener { base = txtBase.text.toString().trimEnd('/')
             thread { val bajo = get("$base/api/stock-bajo"); val hoy = get("$base/api/ventas-hoy")
-                val vence = get("$base/api/vencimientos?dias=30")
-                runOnUiThread { out.text = "STOCK BAJO:\n$bajo\n\nHOY:\n$hoy\n\nVENCEN:\n$vence" } } }
+                val vence = get("$base/api/vencimientos?dias=30"); val rep = get("$base/api/reporte")
+                runOnUiThread { out.text = "STOCK BAJO:\n$bajo\n\nHOY:\n$hoy\n\nVENCEN:\n$vence\n\nREPORTE:\n$rep" } } }
         col.addView(txtBase); col.addView(btn); col.addView(out)
         setContentView(col)
     }

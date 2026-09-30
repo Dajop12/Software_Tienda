@@ -167,6 +167,13 @@ public class MiniApiServer {
             PushService.registrarToken(token);
             responder(ex, "{\"ok\":true}");
         });
+        server.createContext("/api/reporte", ex -> {
+            if (!"GET".equals(ex.getRequestMethod())) { responder(ex, 405, "{\"error\":\"GET\"}"); return; }
+            String rol = rol(ex);
+            if (rol == null) return;
+            if (!ApiAuth.puedeVender(rol)) { responder(ex, 403, "{\"error\":\"solo VENDEDOR+\"}"); return; }
+            responder(ex, GestorDatos.getInstancia().reporteDiaJSON(ApiAuth.esJefe(rol)));
+        });
         server.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(4));
         server.start();
         return "http://localhost:" + puerto;

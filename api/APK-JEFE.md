@@ -11,6 +11,7 @@ En el mismo WiFi, la APK usa `http://IP-PC:8080` (ej: `http://192.168.1.50:8080`
 - `GET /api/deudas` -> `{"total":N,"clientes":[{"id","nombre","deuda"}]}`
 - `POST /api/push-token` body `token=XXX` (registra FCM del jefe)
 - `GET /api/vencimientos?dias=30` -> `[{"id","nombre","stock","vence","dias"}]` (F12)
+- `GET /api/reporte` -> `{fecha,ventas,anuladas,total,ganancia,deudas,porCaja[],top[]}` (F15, ganancia/deudas solo JEFE)
 
 Pantallas APK jefe: Login (mismo usuario, rol JEFE) > Home (ventas/ganancia/deudas) >
 Alertas (stock-bajo) > Inventario (solo lectura) > Deudas.
