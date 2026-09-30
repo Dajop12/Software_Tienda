@@ -93,19 +93,97 @@ public class GestorDatos {
                 + productos.size() + " productos, " + ventas.size() + " ventas.");
     }
 
-    /** Migra productos viejos sin costo/stockMin/barras. */
+    /** Migra datos viejos: defaults de producto + tablas de referencia + barras. */
     private void migrarProductos() {
         boolean cambio = false;
+        java.util.Set<String> barras = new java.util.HashSet<>();
+        for (Producto p : productos) {
+            if (p.getCodigoBarras() != null && !p.getCodigoBarras().isBlank()) {
+                barras.add(p.getCodigoBarras().trim());
+            }
+        }
         for (Producto p : productos) {
             int antes = p.getStockMin();
             p.migrarSiFalta();
             if (p.getStockMin() != antes) cambio = true;
+            // Repara códigos autogenerados por migración previa (patrón 75017526994x)
+            String demo = codigoDemo(p.getId());
+            if (demo != null && !demo.equals(p.getCodigoBarras())
+                    && p.getCodigoBarras() != null && p.getCodigoBarras().startsWith("75017526994")) {
+                barras.remove(p.getCodigoBarras());
+                if (barras.add(demo)) {
+                    p.setCodigoBarras(demo);
+                    cambio = true;
+                    continue;
+                }
+            }
+            // Backfill de código de barras determinista y único.
+            // Los demo P-001..P-008 conservan su código documentado.
+            if (p.getCodigoBarras() == null || p.getCodigoBarras().isBlank()) {
+                String cod = codigoDemo(p.getId());
+                if (cod == null) {
+                    String base = "7501" + String.format("%08d", Math.abs(p.getId().hashCode()) % 100000000);
+                    cod = base;
+                    int suf = 0;
+                    while (!barras.add(cod)) cod = base.substring(0, 11) + (suf++ % 10);
+                } else if (!barras.add(cod)) {
+                    // Ya ocupado por otro producto: genera uno libre
+                    String base = "7501" + String.format("%08d", Math.abs((p.getId() + p.getNombre()).hashCode()) % 100000000);
+                    cod = base;
+                    int suf = 0;
+                    while (!barras.add(cod)) cod = base.substring(0, 11) + (suf++ % 10);
+                }
+                p.setCodigoBarras(cod);
+                cambio = true;
+            }
+            // Proveedor válido o genérico
+            if (p.getProveedorId() == null || p.getProveedorId().isBlank()
+                    || buscarProveedor(p.getProveedorId()) == null) {
+                p.setProveedorId("PR-001");
+                cambio = true;
+            }
         }
-        if (proveedores.isEmpty()) {
-            proveedores.add(new Proveedor("PR-001", "Proveedor general", ""));
+        if (buscarProveedor("PR-001") == null) {
+            proveedores.add(new Proveedor("PR-001", "Distribuidora Tech", "555-0101"));
+            cambio = true;
+        }
+        if (buscarProveedor("PR-002") == null) {
+            proveedores.add(new Proveedor("PR-002", "Oficina Total", "555-0102"));
+            cambio = true;
+        }
+        if (buscarProveedor("PR-003") == null) {
+            proveedores.add(new Proveedor("PR-003", "Abarrotes El Centro", "555-0103"));
+            cambio = true;
+        }
+        if (buscarCliente("C-001") == null) {
+            clientes.add(new Cliente("C-001", "Doña Marta (fiado)", "555-0201"));
+            cambio = true;
+        }
+        if (buscarCliente("C-002") == null) {
+            clientes.add(new Cliente("C-002", "Tienda La Esquina", "555-0202"));
             cambio = true;
         }
         if (cambio) guardarTodo();
+    }
+
+    private Proveedor buscarProveedor(String id) {
+        for (Proveedor pr : proveedores) if (pr.getId().equals(id)) return pr;
+        return null;
+    }
+
+    /** Códigos documentados de los productos demo (coinciden con README/etiquetas). */
+    private static String codigoDemo(String id) {
+        return switch (id) {
+            case "P-001" -> "750100001001";
+            case "P-002" -> "750100002002";
+            case "P-003" -> "750100003003";
+            case "P-004" -> "750100004004";
+            case "P-005" -> "750100005005";
+            case "P-006" -> "750100006006";
+            case "P-007" -> "750100007007";
+            case "P-008" -> "750100008008";
+            default -> null;
+        };
     }
 
     public void guardarTodo() {
@@ -294,7 +372,16 @@ public class GestorDatos {
         }
         if (v.esCredito() && !v.getClienteId().isEmpty()) {
             Cliente c = buscarCliente(v.getClienteId());
-            if (c != null) c.setDeuda(c.getDeuda() - v.getTotal());
+            if (c != null) {
+                // Revierte hasta lo adeudado; si ya abonó de más, el excedente queda en caja
+                double revierte = Math.min(v.getTotal(), c.getDeuda());
+                c.setDeuda(c.getDeuda() - revierte);
+                double sobrante = v.getTotal() - revierte;
+                if (sobrante > 0.005) {
+                    Bitacora.registrar("Anulación " + v.getFolio() + ": abono previo $"
+                            + String.format("%.2f", sobrante) + " queda en caja");
+                }
+            }
         }
         v.anular(motivo.trim());
         guardarTodo();
