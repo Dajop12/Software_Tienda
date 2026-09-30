@@ -1,0 +1,35 @@
+2026-09-29 20:42:02 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-29 20:42:02 - Login OK: admin
+2026-09-29 20:42:02 - Login fallido: admin
+2026-09-29 20:48:01 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-29 20:48:08 - Login OK: admin
+2026-09-29 20:48:09 - Entró al sistema: admin
+2026-09-29 21:05:06 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-29 21:05:06 - Login OK: admin
+2026-09-29 21:22:08 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-29 21:22:15 - Login OK: admin
+2026-09-29 21:22:16 - Entró al sistema: admin
+2026-09-29 21:22:43 - Salió: admin
+2026-09-29 21:22:57 - Login OK: ana
+2026-09-29 21:22:57 - Entró al sistema: ana
+2026-09-29 22:05:12 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-29 22:05:23 - Login OK: admin
+2026-09-29 22:05:24 - Entró al sistema: admin
+2026-09-29 22:15:32 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-29 22:15:36 - Login OK: admin
+2026-09-29 22:15:37 - Entró al sistema: admin
+2026-09-29 22:38:56 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-29 22:39:00 - Login OK: admin
+2026-09-29 22:39:02 - Entró al sistema: admin
+2026-09-29 22:39:22 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-29 22:40:16 - Login OK: admin
+2026-09-29 22:40:17 - Entró al sistema: admin
+2026-09-30 09:25:51 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-30 09:26:37 - Login OK: admin
+2026-09-30 09:26:49 - Pass cambiada: admin
+2026-09-30 09:26:50 - Entró al sistema: admin
+2026-09-30 09:31:01 - Datos cargados: 3 usuarios, 8 productos, 6 alumnos, 5 ventas.
+2026-09-30 09:31:07 - Login fallido: admin
+2026-09-30 09:31:14 - Login OK: admin
+2026-09-30 09:31:15 - Entró al sistema: admin
+2026-09-30 09:31:30 - Exportó ganancias a data/ganancia-producto.csv
