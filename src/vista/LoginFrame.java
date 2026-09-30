@@ -40,9 +40,9 @@ public class LoginFrame extends JFrame {
     }
 
     private JPanel panelIzquierdo() {
-        Tema.GradientPanel p = new Tema.GradientPanel(new Color(13, 19, 54), new Color(59, 130, 255));
+        FondoLogin p = new FondoLogin(new Color(13, 19, 54), new Color(59, 130, 255));
         p.setLayout(new GridBagLayout());
-        p.setBorder(BorderFactory.createEmptyBorder(32, 40, 32, 40));
+        p.setBorder(BorderFactory.createEmptyBorder(32, 40, 28, 40));
         GridBagConstraints g = new GridBagConstraints();
         g.gridx = 0; g.fill = GridBagConstraints.HORIZONTAL; g.anchor = GridBagConstraints.WEST;
 
@@ -53,13 +53,13 @@ public class LoginFrame extends JFrame {
         p.add(hero, g);
 
         JLabel titulo = new JLabel("<html><b style='font-size:26px; color:white'>Super App</b><br>"
-                + "<span style='font-size:13px; color:#C5CAE9'>Tienda + Escuela + Admin</span></html>");
+                + "<span style='font-size:13px; color:#C5CAE9'>Minimarket &#8226; Caja &#8226; Inventario</span></html>");
         g.gridy = 1; g.insets = new Insets(0, 0, 16, 0);
         p.add(titulo, g);
 
         JLabel feats = new JLabel("<html><p style='color:#E8EAF6; font-size:13px'>"
-                + "✔ Dashboard con gráficas<br>✔ Productos y punto de venta<br>"
-                + "✔ Fiado, turnos y cierre<br>✔ Usuarios y roles<br>✔ Guarda en archivos locales</p></html>");
+                + "&#10003; Dashboard con gr&aacute;ficas<br>&#10003; Productos y punto de venta<br>"
+                + "&#10003; Fiado, turnos y cierre<br>&#10003; Usuarios y roles<br>&#10003; Guarda en archivos locales</p></html>");
         g.gridy = 2; g.insets = new Insets(0, 0, 24, 0);
         p.add(feats, g);
 
@@ -75,25 +75,83 @@ public class LoginFrame extends JFrame {
         JLabel c = new JLabel("Consulta: invitado / 1234");
         c.setForeground(new Color(232, 234, 246)); c.setFont(new Font("Consolas", Font.PLAIN, 12));
         card.add(a); card.add(b); card.add(c);
-        g.gridy = 3; g.insets = new Insets(0, 0, 0, 0);
+        g.gridy = 3; g.insets = new Insets(0, 0, 14, 0);
         p.add(card, g);
+
+        // Pie decorativo con versión
+        JLabel pie = new JLabel("v2.0 Enterprise  •  Soporte local  •  PC + APK");
+        pie.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        pie.setForeground(new Color(197, 202, 233));
+        g.gridy = 4; g.insets = new Insets(0, 0, 0, 0);
+        p.add(pie, g);
         return p;
+    }
+
+    /** Fondo con degradado + círculos decorativos (100% dibujado en código). */
+    static class FondoLogin extends JPanel {
+        private final Color c1, c2;
+        FondoLogin(Color a, Color b) { c1 = a; c2 = b; setOpaque(true); }
+        @Override protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setPaint(new GradientPaint(0, 0, c1, getWidth(), getHeight(), c2));
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            // Círculos translúcidos decorativos
+            g2.setColor(new Color(255, 255, 255, 26));
+            int w = getWidth(), h = getHeight();
+            g2.fillOval(w - 130, -70, 220, 220);
+            g2.fillOval(w - 70, h - 160, 150, 150);
+            g2.setColor(new Color(255, 255, 255, 14));
+            g2.fillOval(-60, h - 110, 170, 170);
+            g2.fillOval(w - 220, h / 2 - 40, 90, 90);
+            // Puntitos decorativos abajo a la derecha
+            g2.setColor(new Color(255, 255, 255, 70));
+            for (int r = 0; r < 3; r++) {
+                for (int c = 0; c < 5; c++) {
+                    g2.fillOval(w - 120 + c * 18, h - 60 + r * 16, 5, 5);
+                }
+            }
+            g2.dispose();
+        }
     }
 
     private JPanel panelDerecho() {
         JPanel p = new JPanel(new GridBagLayout());
         p.setBackground(Tema.FONDO);
-        p.setBorder(BorderFactory.createEmptyBorder(36, 42, 36, 42));
+        p.setBorder(BorderFactory.createEmptyBorder(28, 42, 32, 42));
         GridBagConstraints gb = new GridBagConstraints();
         gb.fill = GridBagConstraints.HORIZONTAL; gb.gridx = 0; gb.weightx = 1.0;
         int y = 0;
+
+        // Encabezado de marca decorativo
+        JPanel marca = new JPanel(new BorderLayout());
+        marca.setOpaque(false);
+        JLabel logo = new JLabel("◉  SUPER APP");
+        logo.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        logo.setForeground(Tema.ACENTO);
+        JLabel lblVer = new JLabel("v2.0");
+        lblVer.setFont(new Font("Consolas", Font.PLAIN, 11));
+        lblVer.setForeground(Tema.TEXTO_SEC);
+        marca.add(logo, BorderLayout.WEST);
+        marca.add(lblVer, BorderLayout.EAST);
+        gb.gridy = y++; gb.insets = new Insets(0, 0, 14, 0); p.add(marca, gb);
 
         JLabel t = new JLabel("Bienvenido de nuevo");
         t.setFont(Tema.TITULO); t.setForeground(Color.WHITE);
         gb.gridy = y++; gb.insets = new Insets(0, 0, 4, 0); p.add(t, gb);
         JLabel s = new JLabel("Ingresa para abrir el panel principal");
         s.setFont(Tema.SUB); s.setForeground(Tema.TEXTO_SEC);
-        gb.gridy = y++; gb.insets = new Insets(0, 0, 16, 0); p.add(s, gb);
+        gb.gridy = y++; gb.insets = new Insets(0, 0, 8, 0); p.add(s, gb);
+
+        // Barra de acento decorativa bajo el subtítulo
+        JPanel barra = new JPanel();
+        barra.setBackground(Tema.ACENTO);
+        barra.setPreferredSize(new Dimension(52, 4));
+        JPanel barraWrap = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        barraWrap.setOpaque(false);
+        barraWrap.add(barra);
+        gb.gridy = y++; gb.insets = new Insets(0, 0, 14, 0); p.add(barraWrap, gb);
 
         lblMsg.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblMsg.setForeground(Tema.ROJO);
