@@ -5,10 +5,12 @@ bin/
 # Datos locales y secretos (no subir)
 data/
 backup/
+sync/
 *.dat
 *.log
 *.key
 *.enc
+*.csv
 
 # Android build
 android-jefe/.gradle/
