@@ -3,9 +3,11 @@
 ## 1. Abrir
 ```powershell
 $files = (Get-ChildItem -Recurse -Filter "*.java" -Path "src").FullName
-javac -encoding UTF-8 -d bin $files
-java -cp bin App
+javac -encoding UTF-8 -cp "lib/*" -d bin $files
+java -cp "bin;lib/*" App
 ```
+> El diseño usa el framework **FlatLaf** (`lib/flatlaf-*.jar`, ya incluido).
+> Si corres sin `lib/` en el classpath, la app usa el look del sistema como respaldo.
 Entra `admin/1234` (cám adv/res/reset.
 
 ## 2. Turno (obligatorio para vender)

@@ -10,15 +10,21 @@ import javax.swing.*;
  *  servicio/ -> AuthService (login), Bitacora (log)
  *  vista/    -> Tema + Login + Main + 6 paneles
  *
- * Para correr:
- *   javac -encoding UTF-8 -d bin (Get-ChildItem -Recurse -Filter *.java -Path src).FullName
- *   java -cp bin App
+ * Para correr (incluye lib/ por FlatLaf):
+ *   javac -encoding UTF-8 -cp "lib/*" -d bin (Get-ChildItem -Recurse -Filter *.java -Path src).FullName
+ *   java -cp "bin;lib/*" App
  */
 public class App {
     public static void main(String[] args) {
+        // Framework de decoración: FlatLaf moderno (lib/flatlaf-*.jar).
+        // Si falta el JAR, usa el look del sistema como respaldo.
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ignored) {}
+            com.formdev.flatlaf.FlatDarkLaf.setup();
+        } catch (Exception | NoClassDefFoundError e) {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignored) {}
+        }
         vista.Tema.initGlobales();
         // Inicializa datos (crea demo si es primera vez)
         GestorDatos.getInstancia();

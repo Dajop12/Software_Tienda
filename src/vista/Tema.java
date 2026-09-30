@@ -259,6 +259,17 @@ public class Tema {
         UIManager.put("Button.disabledText", DISABLED_FG);
         UIManager.put("Button.disabledBackground", DISABLED_BG);
         UIManager.put("ComboBox.disabledForeground", DISABLED_FG);
+        // Framework FlatLaf: esquinas redondeadas y foco visible en TODO
+        UIManager.put("Button.arc", 14);
+        UIManager.put("Component.arc", 12);
+        UIManager.put("TextComponent.arc", 12);
+        UIManager.put("ProgressBar.arc", 8);
+        UIManager.put("Component.focusWidth", 2);
+        UIManager.put("Table.showHorizontalLines", true);
+        UIManager.put("Table.showVerticalLines", false);
+        UIManager.put("Table.intercellSpacing", new Dimension(0, 1));
+        UIManager.put("ScrollBar.thumbArc", 8);
+        UIManager.put("ScrollBar.trackArc", 8);
     }
 
     /** Tarjeta KPI: titulo arriba, valor grande, detalle pequeño. */
