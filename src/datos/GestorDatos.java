@@ -206,6 +206,31 @@ public class GestorDatos {
         return r;
     }
 
+    /** F11: kardex de un producto (más reciente primero). */
+    public List<MovimientoInventario> movimientosDe(String productoId) {
+        List<MovimientoInventario> r = new ArrayList<>();
+        for (int i = movimientos.size() - 1; i >= 0; i--) {
+            if (movimientos.get(i).getProductoId().equals(productoId)) r.add(movimientos.get(i));
+        }
+        return r;
+    }
+
+    /** F11: productos que vencen en <= dias (solo con stock). Fecha yyyy-MM-dd. */
+    public List<Producto> proximosAVencer(int dias) {
+        List<Producto> r = new ArrayList<>();
+        java.time.LocalDate hoy = java.time.LocalDate.now();
+        for (Producto p : productos) {
+            String f = p.getFechaVence();
+            if (f == null || f.isBlank() || p.getStock() <= 0) continue;
+            try {
+                long d = java.time.temporal.ChronoUnit.DAYS.between(hoy, java.time.LocalDate.parse(f.trim()));
+                if (d <= dias) r.add(p);
+            } catch (Exception ignored) {}
+        }
+        r.sort((a, b) -> a.getFechaVence().compareTo(b.getFechaVence()));
+        return r;
+    }
+
     /** Kardex: registra movimiento y persiste (llamar dentro de la venta). */
     public void registrarMovimiento(String productoId, MovimientoInventario.Tipo tipo,
                                     int cantidad, int antes, int despues, String motivo) {

@@ -78,6 +78,11 @@ public class MainFrame extends JFrame {
         if (bajos > 0) {
             Toast.error(this, "⚠ " + bajos + " producto(s) con stock bajo. Revisa Productos.");
         }
+        // F11: vencen en 7 días o ya vencidos
+        int venc = GestorDatos.getInstancia().proximosAVencer(7).size();
+        if (venc > 0) {
+            Toast.error(this, "⏳ " + venc + " producto(s) vencen ≤7d o vencidos. Revisa Productos.");
+        }
 
         // reloj cada segundo
         Timer t = new Timer(1000, e -> lblReloj.setText(
@@ -268,14 +273,16 @@ public class MainFrame extends JFrame {
     private void actualizarStatus() {
         GestorDatos g = GestorDatos.getInstancia();
         int bajos = g.productosStockBajo().size();
+        int venc = g.proximosAVencer(30).size();
         // Badge en sidebar: visible sin entrar al módulo
         JButton bProd = nav.get("PROD");
         if (bProd != null) bProd.setText(bajos > 0 ? "📦  Productos (" + bajos + " ⚠)" : "📦  Productos");
         String alerta = bajos > 0 ? "  •  ⚠ " + bajos + " stock bajo" : "  •  ✔ stock OK";
+        if (venc > 0) alerta += "  •  ⏳ " + venc + " vencen ≤30d";
         lblStatus.setText(String.format("%d productos  •  %d ventas  •  %d alumnos  •  %d usuarios%s   —   %s",
                 g.getProductos().size(), g.getVentas().size(), g.getAlumnos().size(),
                 g.getUsuarios().size(), alerta, lblTitulo.getText()));
-        lblStatus.setForeground(bajos > 0 ? Tema.AMARILLO : Tema.TEXTO_SEC);
+        lblStatus.setForeground(bajos > 0 || venc > 0 ? Tema.AMARILLO : Tema.TEXTO_SEC);
     }
 
     public Usuario getUsuario() { return usuario; }

@@ -12,7 +12,7 @@ import java.awt.*;
 /** CRUD de productos con buscador y filtro. */
 public class ProductosPanel extends JPanel {
     private final DefaultTableModel modelo = new DefaultTableModel(
-            new String[]{"ID", "Nombre", "Categoría", "Precio", "Stock", "Total"}, 0) {
+            new String[]{"ID", "Nombre", "Categoría", "Precio", "Stock", "Total", "Vence"}, 0) {
         @Override public boolean isCellEditable(int r, int c) { return false; }
     };
     private final JTable tabla = new JTable(modelo);
@@ -62,34 +62,57 @@ public class ProductosPanel extends JPanel {
         JButton bEdit = new JButton("✎ Editar");
         JButton bDel = new JButton("🗑 Eliminar");
         JButton bEnt = new JButton("📥 Entrada");
-        Tema.botonPrimario(bAdd); Tema.botonSecundario(bEdit); Tema.botonPeligro(bDel); Tema.botonSecundario(bEnt);
+        JButton bKar = new JButton("📜 Kardex");
+        Tema.botonPrimario(bAdd); Tema.botonSecundario(bEdit); Tema.botonPeligro(bDel); Tema.botonSecundario(bEnt); Tema.botonSecundario(bKar);
         bAdd.setToolTipText("Agregar producto (valida precio y stock)");
         bEdit.setToolTipText("Editar el producto seleccionado");
         bDel.setToolTipText("Eliminar el producto seleccionado");
         bEnt.setToolTipText("Factura proveedor: entra stock + vencimiento");
+        bKar.setToolTipText("Ver entradas/salidas del producto seleccionado");
         bAdd.setMnemonic('A'); bEdit.setMnemonic('E');
         bAdd.setPreferredSize(new Dimension(120, 38));
         bEdit.setPreferredSize(new Dimension(110, 38));
         bDel.setPreferredSize(new Dimension(120, 38));
         bEnt.setPreferredSize(new Dimension(110, 38));
+        bKar.setPreferredSize(new Dimension(110, 38));
         bAdd.addActionListener(e -> dialogo(null));
         bEdit.addActionListener(e -> editarSeleccionado());
         bDel.addActionListener(e -> eliminarSeleccionado());
         bEnt.addActionListener(e -> dialogoEntrada());
-        der.add(bAdd); der.add(bEdit); der.add(bDel); der.add(bEnt);
+        bKar.addActionListener(e -> dialogoKardex());
+        der.add(bAdd); der.add(bEdit); der.add(bDel); der.add(bEnt); der.add(bKar);
         bar.add(der, BorderLayout.EAST);
         add(bar, BorderLayout.NORTH);
 
         // tabla + estado vacío ilustrado (CardLayout: evita tabla fría sin datos)
         Tema.tabla(tabla);
         tabla.setRowSorter(sorter);
-        // pinta stock bajo en rojo
+        // pinta stock bajo en rojo + vencido/próximo en columna Vence
         tabla.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
                 Component comp = super.getTableCellRendererComponent(t, v, sel, foc, r, c);
                 int modelRow = t.convertRowIndexToModel(r);
                 int stock = Integer.parseInt(modelo.getValueAt(modelRow, 4).toString());
                 comp.setForeground(stock < 5 ? Tema.ROJO : Tema.TEXTO);
+                comp.setBackground(sel ? new Color(59, 130, 255, 70) : Tema.TARJETA);
+                setHorizontalAlignment(CENTER);
+                return comp;
+            }
+        });
+        tabla.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+                Component comp = super.getTableCellRendererComponent(t, v, sel, foc, r, c);
+                String f = v == null ? "" : v.toString();
+                Color fg = Tema.TEXTO_SEC;
+                if (!f.isBlank()) {
+                    try {
+                        long d = java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(),
+                                java.time.LocalDate.parse(f.trim()));
+                        if (d < 0) fg = Tema.ROJO;
+                        else if (d <= 30) fg = Tema.AMARILLO;
+                    } catch (Exception ignored) {}
+                }
+                comp.setForeground(fg);
                 comp.setBackground(sel ? new Color(59, 130, 255, 70) : Tema.TARJETA);
                 setHorizontalAlignment(CENTER);
                 return comp;
@@ -131,9 +154,11 @@ public class ProductosPanel extends JPanel {
     private void actualizarCentro() {
         boolean hay = sorter.getViewRowCount() > 0;
         centroCards.show(centro, hay ? "TABLA" : "VACIO");
+        long venc = GestorDatos.getInstancia().proximosAVencer(30).size();
         lblConteo.setText(sorter.getViewRowCount() + " de " + modelo.getRowCount() + " productos"
                 + (GestorDatos.getInstancia().stockBajoCount() > 0
-                        ? "  •  ⚠ " + GestorDatos.getInstancia().stockBajoCount() + " con stock bajo" : ""));
+                        ? "  •  ⚠ " + GestorDatos.getInstancia().stockBajoCount() + " con stock bajo" : "")
+                + (venc > 0 ? "  •  ⏳ " + venc + " vencen ≤30d" : ""));
     }
 
     public void refrescar() {
@@ -141,9 +166,30 @@ public class ProductosPanel extends JPanel {
         for (Producto p : GestorDatos.getInstancia().getProductos()) {
             modelo.addRow(new Object[]{p.getId(), p.getNombre(), p.getCategoria(),
                     String.format("%.2f", p.getPrecio()), p.getStock(),
-                    String.format("%.2f", p.getValorTotal())});
+                    String.format("%.2f", p.getValorTotal()), p.getFechaVence()});
         }
         filtrar(); // reaplica filtro + empty state + conteo
+    }
+
+    /** F11: kardex del producto seleccionado. */
+    private void dialogoKardex() {
+        int view = tabla.getSelectedRow();
+        if (view < 0) { Toast.info(this, "Selecciona un producto para ver su kardex."); return; }
+        String id = modelo.getValueAt(tabla.convertRowIndexToModel(view), 0).toString();
+        var movs = GestorDatos.getInstancia().movimientosDe(id);
+        if (movs.isEmpty()) { Toast.info(this, "Sin movimientos para " + id + "."); return; }
+        String[] cols = {"Fecha", "Tipo", "Cant", "Antes", "Después", "Motivo"};
+        Object[][] data = new Object[movs.size()][6];
+        for (int i = 0; i < movs.size(); i++) {
+            var m = movs.get(i);
+            data[i] = new Object[]{m.getFecha(), m.getTipo(), m.getCantidad(), m.getStockAntes(), m.getStockDespues(), m.getMotivo()};
+        }
+        JTable t = new JTable(data, cols);
+        Tema.tabla(t);
+        JScrollPane sp = new JScrollPane(t);
+        Tema.scroll(sp);
+        sp.setPreferredSize(new Dimension(560, 280));
+        JOptionPane.showMessageDialog(this, sp, "📜 Kardex " + id, JOptionPane.PLAIN_MESSAGE);
     }
 
     private void editarSeleccionado() {
@@ -181,13 +227,15 @@ public class ProductosPanel extends JPanel {
         JTextField stock = new JTextField(edit == null ? "" : String.valueOf(edit.getStock()));
         JTextField costo = new JTextField(edit == null ? "" : String.valueOf(edit.getCostoProveedor()));
         JTextField stockMin = new JTextField(edit == null ? "5" : String.valueOf(edit.getStockMin()));
-        for (JTextField f : new JTextField[]{nombre, categoria, precio, stock, costo, stockMin}) Tema.campo(f);
-        JPanel f = new JPanel(new GridLayout(jefe ? 12 : 8, 1, 4, 4));
+        JTextField vence = new JTextField(edit == null ? "" : edit.getFechaVence());
+        for (JTextField f : new JTextField[]{nombre, categoria, precio, stock, costo, stockMin, vence}) Tema.campo(f);
+        JPanel f = new JPanel(new GridLayout(jefe ? 14 : 10, 1, 4, 4));
         f.setBackground(Tema.PANEL);
         f.add(lbl("Nombre:")); f.add(nombre);
         f.add(lbl("Categoría:")); f.add(categoria);
         f.add(lbl("Precio venta:")); f.add(precio);
         f.add(lbl("Stock:")); f.add(stock);
+        f.add(lbl("Vence yyyy-MM-dd (vacío = no perecedero):")); f.add(vence);
         if (jefe) {
             f.add(lbl("Costo proveedor (solo JEFE):")); f.add(costo);
             f.add(lbl("Stock mínimo alerta:")); f.add(stockMin);
@@ -202,16 +250,19 @@ public class ProductosPanel extends JPanel {
             int st = Integer.parseInt(stock.getText().trim());
             double co = jefe && !costo.getText().trim().isEmpty() ? Double.parseDouble(costo.getText().trim()) : -1;
             int sm = jefe && !stockMin.getText().trim().isEmpty() ? Integer.parseInt(stockMin.getText().trim()) : -1;
+            String fv = vence.getText().trim();
+            if (!fv.isEmpty()) java.time.LocalDate.parse(fv); // valida formato
             if (n.isEmpty() || c.isEmpty() || pr <= 0 || st < 0) throw new NumberFormatException();
             if (edit == null) {
                 double costoF = co < 0 ? pr * 0.7 : co;
                 int minF = sm < 0 ? 5 : sm;
                 GestorDatos.getInstancia().getProductos().add(
-                        new Producto(GestorDatos.nuevoId("P"), n, c, costoF, pr, st, minF, "", "", ""));
+                        new Producto(GestorDatos.nuevoId("P"), n, c, costoF, pr, st, minF, "", "", fv));
                 Bitacora.registrar("Producto agregado: " + n);
                 Toast.exito(this, "Producto agregado: " + n);
             } else {
                 edit.setNombre(n); edit.setCategoria(c); edit.setPrecio(pr); edit.setStock(st);
+                edit.setFechaVence(fv);
                 if (jefe) {
                     if (co >= 0) edit.setCostoProveedor(co);
                     if (sm >= 0) edit.setStockMin(sm);
@@ -221,8 +272,8 @@ public class ProductosPanel extends JPanel {
             }
             GestorDatos.getInstancia().guardarTodo();
             refrescar();
-        } catch (NumberFormatException ex) {
-            Toast.error(this, "Revisa: nombre/categoría no vacíos, precio > 0, stock >= 0.");
+        } catch (Exception ex) {
+            Toast.error(this, "Revisa: precio > 0, stock >= 0, vence yyyy-MM-dd o vacío.");
         }
     }
 

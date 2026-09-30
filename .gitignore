@@ -1,0 +1,22 @@
+# Compilados
+bin/
+*.class
+
+# Datos locales y secretos (no subir)
+data/
+backup/
+*.dat
+*.log
+*.key
+*.enc
+
+# Android build
+android-jefe/.gradle/
+android-jefe/build/
+android-jefe/app/build/
+android-jefe/local.properties
+
+# VS Code / OS
+.vscode/settings.json
+.DS_Store
+Thumbs.db
