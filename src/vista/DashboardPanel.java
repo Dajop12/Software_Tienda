@@ -96,7 +96,7 @@ public class DashboardPanel extends JPanel {
         List<Venta> vs = g.getVentas();
         for (int i = vs.size() - 1; i >= 0 && modeloVentas.getRowCount() < 6; i--) {
             Venta v = vs.get(i);
-            modeloVentas.addRow(new Object[]{v.getId(), v.getFecha(), v.getVendedor(),
+            modeloVentas.addRow(new Object[]{v.getFolio(), v.getFecha(), v.getVendedor(),
                     String.format("$%.2f", v.getTotal())});
         }
         modeloLog.clear();

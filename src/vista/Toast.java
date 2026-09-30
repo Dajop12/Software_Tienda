@@ -51,7 +51,7 @@ public class Toast {
         }
         popup.setLocation(Math.max(x, 0), Math.max(y, 0));
         popup.setVisible(true);
-        popup.setOpacity(0f);
+        try { popup.setOpacity(0f); } catch (Exception ignored) {}
         // fade-in + espera + fade-out (Timer, sin bloquear EDT)
         Timer in = new Timer(20, null);
         in.addActionListener(e -> {
