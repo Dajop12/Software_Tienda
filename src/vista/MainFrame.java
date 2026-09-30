@@ -83,6 +83,8 @@ public class MainFrame extends JFrame {
         if (venc > 0) {
             Toast.error(this, "⏳ " + venc + " producto(s) vencen ≤7d o vencidos. Revisa Productos.");
         }
+        // F12: push caducidad 1 vez/día (llega a FCM si hay key)
+        servicio.PushService.alertarVencimientos(GestorDatos.getInstancia().proximosAVencer(7));
 
         // reloj cada segundo
         Timer t = new Timer(1000, e -> lblReloj.setText(

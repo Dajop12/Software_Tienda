@@ -128,6 +128,35 @@ public class MiniApiServer {
             }
             responder(ex, sb.append("]}").toString());
         });
+        server.createContext("/api/vencimientos", ex -> {
+            if (!"GET".equals(ex.getRequestMethod())) { responder(ex, 405, "{\"error\":\"GET ?dias=30\"}"); return; }
+            String rol = rol(ex);
+            if (rol == null) return;
+            if (!ApiAuth.puedeVender(rol)) { responder(ex, 403, "{\"error\":\"solo VENDEDOR+\"}"); return; }
+            int dias = 30;
+            try {
+                String q = ex.getRequestURI().getQuery();
+                if (q != null) for (String kv : q.split("&")) {
+                    if (kv.startsWith("dias=")) dias = Integer.parseInt(kv.substring(5));
+                }
+            } catch (Exception ignored) {}
+            StringBuilder sb = new StringBuilder("[");
+            var lista = GestorDatos.getInstancia().proximosAVencer(dias);
+            for (int i = 0; i < lista.size(); i++) {
+                Producto pr = lista.get(i);
+                if (i > 0) sb.append(",");
+                long rest;
+                try {
+                    rest = java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(),
+                            java.time.LocalDate.parse(pr.getFechaVence().trim()));
+                } catch (Exception e) { rest = 0; }
+                sb.append("{\"id\":\"").append(esc(pr.getId())).append("\",\"nombre\":\"").append(esc(pr.getNombre()))
+                        .append("\",\"stock\":").append(pr.getStock())
+                        .append(",\"vence\":\"").append(esc(pr.getFechaVence()))
+                        .append("\",\"dias\":").append(rest).append("}");
+            }
+            responder(ex, sb.append("]").toString());
+        });
         server.createContext("/api/push-token", ex -> {
             if (!"POST".equals(ex.getRequestMethod())) { responder(ex, 405, "{\"error\":\"POST token=XXX\"}"); return; }
             String rol = rol(ex);

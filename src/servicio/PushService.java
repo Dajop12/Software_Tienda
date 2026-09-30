@@ -29,6 +29,22 @@ public class PushService {
         encolar("STOCK_BAJO", nombre + " queda " + stock + " (mín " + stockMin + ")");
     }
 
+    /** F12: push caducidad 1 vez/día (evita spam). Llamar al abrir app. */
+    public static synchronized void alertarVencimientos(java.util.List<dominio.Producto> lista) {
+        if (lista == null || lista.isEmpty()) return;
+        try {
+            java.nio.file.Path p = java.nio.file.Paths.get("data/push-vence-fecha.txt");
+            String hoy = java.time.LocalDate.now().toString();
+            if (java.nio.file.Files.exists(p)
+                    && java.nio.file.Files.readString(p).trim().equals(hoy)) return;
+            java.nio.file.Files.createDirectories(p.getParent());
+            java.nio.file.Files.writeString(p, hoy);
+        } catch (Exception ignored) {}
+        for (dominio.Producto pr : lista) {
+            encolar("VENCE", pr.getNombre() + " vence " + pr.getFechaVence() + " (stock " + pr.getStock() + ")");
+        }
+    }
+
     public static synchronized void registrarToken(String token) {
         if (token == null || token.isBlank()) return;
         try {
