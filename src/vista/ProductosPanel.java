@@ -50,13 +50,17 @@ public class ProductosPanel extends JPanel {
         cmbCat.setToolTipText("Filtrar por categoría");
         cmbCat.addActionListener(e -> filtrar());
 
-        JPanel izq = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        JPanel izq = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         izq.setOpaque(false);
-        izq.add(new JLabel("🔍") {{ setForeground(Tema.TEXTO); }});
-        izq.add(txtBuscar); izq.add(cmbCat);
+        JLabel iconoBuscar = new JLabel("🔍");
+        iconoBuscar.setForeground(Tema.TEXTO);
+        izq.add(iconoBuscar);
+        izq.add(txtBuscar);
+        izq.add(Box.createHorizontalStrut(10));
+        izq.add(cmbCat);
         bar.add(izq, BorderLayout.WEST);
 
-        JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         der.setOpaque(false);
         JButton bAdd = new JButton("＋ Agregar");
         JButton bEdit = new JButton("✎ Editar");
@@ -70,11 +74,11 @@ public class ProductosPanel extends JPanel {
         bEnt.setToolTipText("Factura proveedor: entra stock + vencimiento");
         bKar.setToolTipText("Ver entradas/salidas del producto seleccionado");
         bAdd.setMnemonic('A'); bEdit.setMnemonic('E');
-        bAdd.setPreferredSize(new Dimension(120, 38));
-        bEdit.setPreferredSize(new Dimension(110, 38));
-        bDel.setPreferredSize(new Dimension(120, 38));
-        bEnt.setPreferredSize(new Dimension(110, 38));
-        bKar.setPreferredSize(new Dimension(110, 38));
+        bAdd.setPreferredSize(new Dimension(130, 40));
+        bEdit.setPreferredSize(new Dimension(120, 40));
+        bDel.setPreferredSize(new Dimension(130, 40));
+        bEnt.setPreferredSize(new Dimension(120, 40));
+        bKar.setPreferredSize(new Dimension(120, 40));
         bAdd.addActionListener(e -> dialogo(null));
         bEdit.addActionListener(e -> editarSeleccionado());
         bDel.addActionListener(e -> eliminarSeleccionado());
@@ -132,7 +136,7 @@ public class ProductosPanel extends JPanel {
         centro.add(vacio, "VACIO");
         add(centro, BorderLayout.CENTER);
 
-        lblConteo.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblConteo.setFont(Tema.fuente(Font.PLAIN, 11));
         lblConteo.setForeground(Tema.TEXTO_SEC);
         add(lblConteo, BorderLayout.SOUTH);
     }

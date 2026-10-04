@@ -25,19 +25,21 @@ public class MainFrame extends JFrame {
     private final Map<String, JButton> nav = new LinkedHashMap<>();
     private final Map<String, String> titulos = Map.of(
             "DASH", "Dashboard", "PROD", "Productos", "VENT", "Punto de venta",
-            "USER", "Usuarios", "CONF", "Configuración");
+            "USER", "Usuarios", "CONF", "Configuración", "CLIE", "Clientes y Fiados");
     private final Map<String, String> subtitulos = Map.of(
             "DASH", "Resumen del negocio en tiempo real",
             "PROD", "Inventario, precios y stock",
             "VENT", "Cobra rápido y descuenta stock solo",
             "USER", "Roles y acceso (solo ADMIN)",
-            "CONF", "Respaldo, exportación y bitácora");
+            "CONF", "Respaldo, exportación y bitácora",
+            "CLIE", "Control de créditos y cuentas por cobrar");
 
     private DashboardPanel dashboard;
     private ProductosPanel productos;
     private VentasPanel ventas;
     private UsuariosPanel usuarios;
     private ConfigPanel config;
+    private ClientesPanel clientes;
 
     public MainFrame(Usuario usuario) {
         super("Super App — " + usuario.getNombre());
@@ -57,12 +59,14 @@ public class MainFrame extends JFrame {
         ventas = new VentasPanel(usuario);
         usuarios = new UsuariosPanel(usuario);
         config = new ConfigPanel(this);
+        clientes = new ClientesPanel();
 
         centro.add(dashboard, "DASH");
         centro.add(productos, "PROD");
         centro.add(ventas, "VENT");
         centro.add(usuarios, "USER");
         centro.add(config, "CONF");
+        centro.add(clientes, "CLIE");
         add(centro, BorderLayout.CENTER);
         add(statusbar(), BorderLayout.SOUTH);
 
@@ -97,12 +101,12 @@ public class MainFrame extends JFrame {
 
         // Marca
         JLabel logo = new JLabel("◉ Super App");
-        logo.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        logo.setFont(Tema.fuente(Font.BOLD, 18));
         logo.setForeground(Color.WHITE);
         logo.setAlignmentX(Component.LEFT_ALIGNMENT);
         s.add(logo);
         JLabel tag = new JLabel("ENTERPRISE • v2.0");
-        tag.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        tag.setFont(Tema.fuente(Font.BOLD, 10));
         tag.setForeground(Tema.ACENTO);
         tag.setAlignmentX(Component.LEFT_ALIGNMENT);
         s.add(tag);
@@ -120,7 +124,7 @@ public class MainFrame extends JFrame {
         JPanel utxt = new JPanel(new GridLayout(2, 1, 0, 1));
         utxt.setOpaque(false);
         JLabel un = new JLabel(truncar(usuario.getNombre(), 18));
-        un.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        un.setFont(Tema.fuente(Font.BOLD, 12));
         un.setForeground(Color.WHITE);
         un.setToolTipText(usuario.getNombre() + " • " + usuario.getUsername());
         utxt.add(un);
@@ -135,7 +139,7 @@ public class MainFrame extends JFrame {
         s.add(Box.createVerticalStrut(16));
 
         JLabel menu = new JLabel("MENÚ");
-        menu.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        menu.setFont(Tema.fuente(Font.BOLD, 10));
         menu.setForeground(Tema.TEXTO_SEC);
         menu.setAlignmentX(Component.LEFT_ALIGNMENT);
         s.add(menu);
@@ -144,8 +148,9 @@ public class MainFrame extends JFrame {
         agregarNav(s, "DASH", "📊  Dashboard", "Ver resumen (Ctrl+1)");
         agregarNav(s, "PROD", "📦  Productos", "Gestionar inventario (Ctrl+2)");
         agregarNav(s, "VENT", "🛒  Punto de venta", "Cobrar (Ctrl+3)");
-        agregarNav(s, "USER", "👥  Usuarios", "Solo ADMIN (Ctrl+4)");
-        agregarNav(s, "CONF", "⚙️  Configuración", "Respaldo y bitácora (Ctrl+5)");
+        agregarNav(s, "CLIE", "👥  Clientes", "Control de fiados (Ctrl+4)");
+        agregarNav(s, "USER", "👥  Usuarios", "Solo ADMIN (Ctrl+5)");
+        agregarNav(s, "CONF", "⚙️  Configuración", "Respaldo y bitácora (Ctrl+6)");
         s.add(Box.createVerticalGlue());
 
         JButton salir = new JButton("⏻  Cerrar sesión");
@@ -188,12 +193,12 @@ public class MainFrame extends JFrame {
                 BorderFactory.createEmptyBorder(10, 20, 10, 20)));
         JPanel tit = new JPanel(new GridLayout(2, 1, 0, 0));
         tit.setOpaque(false);
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTitulo.setFont(Tema.fuente(Font.BOLD, 18));
         lblTitulo.setForeground(Color.WHITE);
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblSub.setFont(Tema.fuente(Font.PLAIN, 12));
         lblSub.setForeground(Tema.TEXTO_SEC);
         tit.add(lblTitulo); tit.add(lblSub);
-        lblReloj.setFont(new Font("Consolas", Font.PLAIN, 12));
+        lblReloj.setFont(Tema.fuenteMono(Font.PLAIN, 12));
         lblReloj.setForeground(Tema.TEXTO_SEC);
         lblReloj.setHorizontalAlignment(SwingConstants.RIGHT);
         t.add(tit, BorderLayout.WEST);
@@ -203,14 +208,14 @@ public class MainFrame extends JFrame {
 
     private JPanel statusbar() {
         JPanel st = new JPanel(new BorderLayout());
-        st.setBackground(new Color(21, 24, 32));
+        st.setBackground(Tema.PANEL);
         st.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, Tema.BORDE),
                 BorderFactory.createEmptyBorder(6, 18, 6, 18)));
-        lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblStatus.setFont(Tema.fuente(Font.PLAIN, 11));
         lblStatus.setForeground(Tema.TEXTO_SEC);
         JLabel local = new JLabel("● Local");
-        local.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        local.setFont(Tema.fuente(Font.BOLD, 11));
         local.setForeground(Tema.VERDE);
         local.setToolTipText("Datos guardados en carpeta data/");
         st.add(lblStatus, BorderLayout.WEST);
@@ -220,7 +225,7 @@ public class MainFrame extends JFrame {
 
     /** Atajos Ctrl+1..5: navegación sin mouse (estándar enterprise). */
     private void instalarAtajos() {
-        String[] claves = {"DASH", "PROD", "VENT", "USER", "CONF"};
+        String[] claves = {"DASH", "PROD", "VENT", "CLIE", "USER", "CONF"};
         for (int i = 0; i < claves.length; i++) {
             final String c = claves[i];
             getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -246,12 +251,6 @@ public class MainFrame extends JFrame {
         for (Map.Entry<String, JButton> e : nav.entrySet()) {
             boolean activo = e.getKey().equals(clave);
             Tema.botonSidebar(e.getValue(), activo);
-            // Indicador activo: fondo + barra lateral implícita vía borde
-            e.getValue().setBackground(activo ? Tema.PRIMARIO_BG : Tema.PANEL);
-            e.getValue().setForeground(activo ? Tema.BTN_TEXTO : Tema.NAV_TEXTO);
-            e.getValue().setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, activo ? 3 : 0, 0, 0, activo ? Color.WHITE : Tema.PANEL),
-                    BorderFactory.createEmptyBorder(10, activo ? 13 : 16, 10, 16)));
         }
         lblTitulo.setText(titulos.getOrDefault(clave, clave));
         lblSub.setText(subtitulos.getOrDefault(clave, ""));
@@ -259,6 +258,7 @@ public class MainFrame extends JFrame {
             case "DASH" -> dashboard.refrescar();
             case "PROD" -> productos.refrescar();
             case "VENT" -> ventas.refrescar();
+            case "CLIE" -> clientes.refrescar();
             case "USER" -> usuarios.refrescar();
             case "CONF" -> config.refrescar();
         }

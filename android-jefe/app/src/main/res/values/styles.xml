@@ -1,0 +1,12 @@
+<resources>
+    <style name="Theme.TiendaJefe" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">#256F97</item>
+        <item name="colorPrimaryDark">#1F2633</item>
+        <item name="colorAccent">#489DB5</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">#161B24</item>
+        <item name="android:navigationBarColor">#161B24</item>
+        <item name="android:windowBackground">#161B24</item>
+    </style>
+</resources>

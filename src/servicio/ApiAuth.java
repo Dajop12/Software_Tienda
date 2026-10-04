@@ -13,14 +13,15 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ApiAuth {
     private static final Map<String, Sesion> SESIONES = new ConcurrentHashMap<>();
-    private record Sesion(String username, String rol, long expira) {}
+    private record Sesion(String username, long expira) {}
 
     public static String login(String user, String pass) {
         for (Usuario x : GestorDatos.getInstancia().getUsuarios()) {
             if (x.getUsername().equalsIgnoreCase(user == null ? "" : user.trim())
                     && x.isActivo() && x.verificaPass(pass == null ? "" : pass)) {
+                GestorDatos.getInstancia().guardarTodo();
                 String t = UUID.randomUUID().toString().replace("-", "");
-                SESIONES.put(t, new Sesion(x.getUsername(), x.getRol(), System.currentTimeMillis() + 12 * 3600_000L));
+                SESIONES.put(t, new Sesion(x.getUsername(), System.currentTimeMillis() + 12 * 3600_000L));
                 Bitacora.registrar("API login: " + x.getUsername());
                 return t + "|" + x.getRol();
             }
@@ -32,7 +33,13 @@ public class ApiAuth {
     public static String rolDe(String token, String apiKey, String apiKeyReal) {
         if (token != null && !token.isBlank()) {
             Sesion s = SESIONES.get(token.trim());
-            if (s != null && System.currentTimeMillis() < s.expira()) return s.rol();
+            if (s != null && System.currentTimeMillis() < s.expira()) {
+                for (Usuario usuario : GestorDatos.getInstancia().getUsuarios()) {
+                    if (usuario.getUsername().equalsIgnoreCase(s.username()) && usuario.isActivo()) {
+                        return usuario.getRol();
+                    }
+                }
+            }
             SESIONES.remove(token.trim());
         }
         if (apiKeyReal != null && apiKeyReal.equals(apiKey)) return "ADMIN";

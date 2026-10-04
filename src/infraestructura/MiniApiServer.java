@@ -9,8 +9,10 @@ import servicio.PushService;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 /**
  * F4-F7: mini API con solo JDK para APK jefe y PC web. F7 con roles.
@@ -21,6 +23,7 @@ import java.util.List;
  */
 public class MiniApiServer {
     private static HttpServer server;
+    private static java.util.concurrent.ExecutorService executor;
     private static int puerto = 8080;
 
     public static synchronized boolean corriendo() {
@@ -38,9 +41,11 @@ public class MiniApiServer {
                 java.nio.file.Files.writeString(p, k);
                 return k;
             }
-            return java.nio.file.Files.readString(p).trim();
+            String key = java.nio.file.Files.readString(p).trim();
+            if (key.isEmpty()) throw new IOException("el archivo está vacío");
+            return key;
         } catch (Exception e) {
-            return "demo-key";
+            throw new IllegalStateException("No se pudo leer o crear data/api.key.", e);
         }
     }
 
@@ -77,11 +82,15 @@ public class MiniApiServer {
         server.createContext("/api/login", ex -> {
             if (!"POST".equals(ex.getRequestMethod())) { responder(ex, 405, "{\"error\":\"POST user=..&pass=..\"}"); return; }
             String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            String user = "", pass = "";
-            for (String kv : body.split("&")) {
-                if (kv.startsWith("user=")) user = kv.substring(5);
-                if (kv.startsWith("pass=")) pass = kv.substring(5);
+            Map<String, String> campos;
+            try {
+                campos = parametrosForm(body);
+            } catch (IllegalArgumentException e) {
+                responder(ex, 400, "{\"error\":\"formulario inválido\"}");
+                return;
             }
+            String user = campos.getOrDefault("user", "");
+            String pass = campos.getOrDefault("pass", "");
             String r = ApiAuth.login(user, pass);
             if (r == null) { responder(ex, 401, "{\"error\":\"credenciales\"}"); return; }
             String[] t = r.split("\\|");
@@ -107,10 +116,11 @@ public class MiniApiServer {
             if (rol == null) return;
             if (!ApiAuth.puedeVender(rol)) { responder(ex, 403, "{\"error\":\"solo VENDEDOR+\"}"); return;
             }
+            boolean jefe = ApiAuth.esJefe(rol);
             responder(ex,
                 "{\"ventas\":" + GestorDatos.getInstancia().ventasHoy()
-                + ",\"ganancia\":" + GestorDatos.getInstancia().gananciaHoy()
-                + ",\"deudas\":" + GestorDatos.getInstancia().deudasTotales() + "}"); });
+                + ",\"ganancia\":" + (jefe ? GestorDatos.getInstancia().gananciaHoy() : 0)
+                + ",\"deudas\":" + (jefe ? GestorDatos.getInstancia().deudasTotales() : 0) + "}"); });
         server.createContext("/api/deudas", ex -> {
             String rol = rol(ex);
             if (rol == null) return;
@@ -163,7 +173,13 @@ public class MiniApiServer {
             if (rol == null) return;
             if (!ApiAuth.esJefe(rol)) { responder(ex, 403, "{\"error\":\"solo JEFE\"}"); return; }
             String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            String token = body.startsWith("token=") ? body.substring(6).trim() : body.trim();
+            String token;
+            try {
+                token = parametrosForm(body).getOrDefault("token", body.trim());
+            } catch (IllegalArgumentException e) {
+                responder(ex, 400, "{\"error\":\"formulario inválido\"}");
+                return;
+            }
             PushService.registrarToken(token);
             responder(ex, "{\"ok\":true}");
         });
@@ -174,13 +190,15 @@ public class MiniApiServer {
             if (!ApiAuth.puedeVender(rol)) { responder(ex, 403, "{\"error\":\"solo VENDEDOR+\"}"); return; }
             responder(ex, GestorDatos.getInstancia().reporteDiaJSON(ApiAuth.esJefe(rol)));
         });
-        server.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(4));
+        executor = java.util.concurrent.Executors.newFixedThreadPool(4);
+        server.setExecutor(executor);
         server.start();
         return "http://localhost:" + puerto;
     }
 
     public static synchronized void detener() {
         if (server != null) { server.stop(0); server = null; }
+        if (executor != null) { executor.shutdownNow(); executor = null; }
     }
 
     private static void responder(com.sun.net.httpserver.HttpExchange ex, String json) throws IOException {
@@ -193,6 +211,18 @@ public class MiniApiServer {
         ex.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         ex.sendResponseHeaders(codigo, b.length);
         try (OutputStream os = ex.getResponseBody()) { os.write(b); }
+    }
+
+    private static Map<String, String> parametrosForm(String cuerpo) {
+        java.util.Map<String, String> campos = new java.util.HashMap<>();
+        for (String par : cuerpo.split("&")) {
+            int separador = par.indexOf('=');
+            String clave = separador < 0 ? par : par.substring(0, separador);
+            String valor = separador < 0 ? "" : par.substring(separador + 1);
+            campos.put(URLDecoder.decode(clave, StandardCharsets.UTF_8),
+                    URLDecoder.decode(valor, StandardCharsets.UTF_8));
+        }
+        return campos;
     }
 
     private static String esc(String s) {

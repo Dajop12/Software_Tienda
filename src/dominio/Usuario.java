@@ -1,6 +1,7 @@
 package dominio;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import javax.crypto.SecretKeyFactory;
@@ -8,7 +9,7 @@ import javax.crypto.spec.PBEKeySpec;
 
 /**
  * Usuario. Rol: ADMIN (todo/JEFE), VENDEDOR (ventas+productos), CONSULTA (solo ver).
- * F6: PBKDF2+salt v2 (v2$salt$hash). Verifica legacy SHA-256 y migra solo.
+ * PBKDF2 con salt e iteraciones versionadas; migra hashes anteriores al validar.
  */
 public class Usuario implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -16,7 +17,7 @@ public class Usuario implements Serializable {
     private String id;
     private String nombre;
     private String username;
-    private String passHash; // v2$saltHex$hashHex o legacy hex
+    private String passHash; // v3$iteraciones$saltHex$hashHex, v2 legacy o SHA-256 legado
     private String rol;
     private boolean activo;
 
@@ -29,37 +30,66 @@ public class Usuario implements Serializable {
         this.activo = activo;
     }
 
-    /** Nuevo hash v2 PBKDF2 21k iteraciones. */
+    private static final int ITERACIONES_ACTUALES = 310_000;
+    private static final int ITERACIONES_V2 = 21_000;
+
+    /** Nuevo hash PBKDF2-HMAC-SHA256 con salt aleatorio. */
     public static String hashPassword(String plano) {
+        if (plano == null) throw new IllegalArgumentException("La contraseña no puede ser null.");
+        byte[] salt = new byte[16];
+        new SecureRandom().nextBytes(salt);
         try {
-            byte[] salt = new byte[16];
-            new SecureRandom().nextBytes(salt);
-            PBEKeySpec spec = new PBEKeySpec(plano.toCharArray(), salt, 21000, 256);
-            byte[] hash = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
-            spec.clearPassword();
-            return "v2$" + hex(salt) + "$" + hex(hash);
+            byte[] hash = derivar(plano.toCharArray(), salt, ITERACIONES_ACTUALES);
+            return "v3$" + ITERACIONES_ACTUALES + "$" + hex(salt) + "$" + hex(hash);
         } catch (Exception e) {
-            return "v2$00$00";
+            throw new IllegalStateException("No se pudo proteger la contraseña con PBKDF2.", e);
         }
     }
 
     public boolean verificaPass(String plano) {
-        if (passHash != null && passHash.startsWith("v2$")) {
+        if (plano == null || passHash == null) return false;
+        if (passHash.startsWith("v3$") || passHash.startsWith("v2$")) {
             try {
                 String[] p = passHash.split("\\$");
-                byte[] salt = unhex(p[1]);
-                PBEKeySpec spec = new PBEKeySpec(plano.toCharArray(), salt, 21000, 256);
-                byte[] hash = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
-                spec.clearPassword();
-                return hex(hash).equals(p[2]);
+                int iteraciones;
+                String saltHex;
+                String hashHex;
+                if (p.length == 4 && "v3".equals(p[0])) {
+                    iteraciones = Integer.parseInt(p[1]);
+                    if (iteraciones < ITERACIONES_V2 || iteraciones > 2_000_000) return false;
+                    saltHex = p[2];
+                    hashHex = p[3];
+                } else if (p.length == 3 && "v2".equals(p[0])) {
+                    iteraciones = ITERACIONES_V2;
+                    saltHex = p[1];
+                    hashHex = p[2];
+                } else {
+                    return false;
+                }
+                byte[] actual = derivar(plano.toCharArray(), unhex(saltHex), iteraciones);
+                boolean ok = MessageDigest.isEqual(actual, unhex(hashHex));
+                if (ok && p[0].equals("v2")) passHash = hashPassword(plano);
+                return ok;
             } catch (Exception e) {
                 return false;
             }
         }
-        // legacy SHA-256: si ok, migra a v2 en memoria (se persiste en próximo guardarTodo)
-        boolean ok = passHash != null && passHash.equals(sha256(plano));
+        // Legacy SHA-256: si valida, migra al formato actual en memoria.
+        boolean ok = MessageDigest.isEqual(passHash.getBytes(StandardCharsets.US_ASCII),
+                sha256(plano).getBytes(StandardCharsets.US_ASCII));
         if (ok) passHash = hashPassword(plano);
         return ok;
+    }
+
+    private static byte[] derivar(char[] plano, byte[] salt, int iteraciones) throws Exception {
+        PBEKeySpec spec = new PBEKeySpec(plano, salt, iteraciones, 256);
+        try {
+            return SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+                    .generateSecret(spec).getEncoded();
+        } finally {
+            spec.clearPassword();
+            java.util.Arrays.fill(plano, '\0');
+        }
     }
 
     public void cambiarPass(String nuevaPlana) {
@@ -69,10 +99,10 @@ public class Usuario implements Serializable {
     private static String sha256(String plano) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] bytes = md.digest(plano.getBytes("UTF-8"));
+            byte[] bytes = md.digest(plano.getBytes(StandardCharsets.UTF_8));
             return hex(bytes);
         } catch (Exception e) {
-            return plano;
+            throw new IllegalStateException("No se pudo verificar la contraseña SHA-256 heredada.", e);
         }
     }
 

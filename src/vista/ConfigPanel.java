@@ -38,7 +38,7 @@ public class ConfigPanel extends JPanel {
         izq.add(t1);
         izq.add(Box.createVerticalStrut(8));
         lblInfo.setForeground(Tema.TEXTO_SEC);
-        lblInfo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblInfo.setFont(Tema.fuente(Font.PLAIN, 12));
         lblInfo.setAlignmentX(Component.LEFT_ALIGNMENT);
         izq.add(lblInfo);
         izq.add(Box.createVerticalStrut(12));
@@ -148,7 +148,7 @@ public class ConfigPanel extends JPanel {
         txtLog.setEditable(false);
         txtLog.setBackground(Tema.PANEL);
         txtLog.setForeground(Tema.TEXTO_SEC);
-        txtLog.setFont(new Font("Consolas", Font.PLAIN, 11));
+        txtLog.setFont(Tema.fuenteMono(Font.PLAIN, 11));
         der.add(t2, BorderLayout.NORTH);
         der.add(new JScrollPane(txtLog), BorderLayout.CENTER);
         grid.add(der);
@@ -158,7 +158,7 @@ public class ConfigPanel extends JPanel {
         JLabel about = new JLabel("Super App v2.0 • Java Swing • Guarda en data/*.dat • Hecho para aprender POO y MVC",
                 SwingConstants.CENTER);
         about.setForeground(Tema.TEXTO_SEC);
-        about.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        about.setFont(Tema.fuente(Font.ITALIC, 11));
         add(about, BorderLayout.SOUTH);
     }
 

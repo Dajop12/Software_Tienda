@@ -5,6 +5,11 @@ import servicio.Auditoria;
 import servicio.Bitacora;
 import servicio.PushService;
 import java.io.*;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -48,49 +53,99 @@ public class GestorDatos {
     public List<CompraProveedor> getCompras() { return compras; }
 
     // ===== persistencia =====
-    @SuppressWarnings("unchecked")
-    private <T> List<T> leer(String ruta) {
-        File f = new File(ruta);
-        if (!f.exists()) return null;
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
+    private <T> List<T> leer(String ruta, Class<T> tipo) {
+        Path archivo = Paths.get(ruta);
+        if (!Files.exists(archivo)) return null;
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(archivo))) {
             Object o = ois.readObject();
-            return (List<T>) o;
-        } catch (Exception e) {
-            return null;
+            if (!(o instanceof List<?> elementos)) {
+                throw new IOException("el contenido no es una lista");
+            }
+            List<T> resultado = new ArrayList<>(elementos.size());
+            for (Object elemento : elementos) {
+                if (!tipo.isInstance(elemento)) {
+                    throw new IOException("contiene un registro incompatible");
+                }
+                resultado.add(tipo.cast(elemento));
+            }
+            return resultado;
+        } catch (IOException | ClassNotFoundException e) {
+            throw new IllegalStateException("No se pudo leer " + ruta + ": " + e.getMessage()
+                    + ". Los datos no se reemplazaron; restaura un backup antes de continuar.", e);
         }
     }
 
     private void escribir(String ruta, List<?> lista) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(ruta))) {
-            oos.writeObject(lista);
-        } catch (Exception e) {
-            System.err.println("No se pudo guardar " + ruta + ": " + e.getMessage());
+        Path destino = Paths.get(ruta);
+        Path temporal = null;
+        try {
+            Files.createDirectories(destino.getParent());
+            temporal = Files.createTempFile(destino.getParent(), destino.getFileName().toString(), ".tmp");
+            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(temporal))) {
+                oos.writeObject(lista);
+                oos.flush();
+            }
+            try {
+                Files.move(temporal, destino, StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temporal, destino, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("No se pudieron guardar los datos en " + ruta
+                    + ": " + e.getMessage(), e);
+        } finally {
+            if (temporal != null) {
+                try {
+                    Files.deleteIfExists(temporal);
+                } catch (IOException e) {
+                    System.err.println("No se pudo limpiar el temporal " + temporal + ": " + e.getMessage());
+                }
+            }
         }
     }
 
     private void cargarTodo() {
-        List<Usuario> u = leer("data/usuarios.dat");
-        List<Producto> p = leer("data/productos.dat");
-        List<Venta> v = leer("data/ventas.dat");
-        List<Proveedor> pr = leer("data/proveedores.dat");
-        List<MovimientoInventario> m = leer("data/movimientos.dat");
-        List<Cliente> cl = leer("data/clientes.dat");
-        List<TurnoCaja> tu = leer("data/turnos.dat");
-        List<CompraProveedor> co = leer("data/compras.dat");
-        if (u == null || p == null || v == null) {
+        String[] archivos = {"usuarios.dat", "productos.dat", "ventas.dat", "proveedores.dat",
+                "movimientos.dat", "clientes.dat", "turnos.dat", "compras.dat"};
+        boolean instalacionNueva = true;
+        for (String archivo : archivos) {
+            if (Files.exists(Paths.get("data", archivo))) {
+                instalacionNueva = false;
+                break;
+            }
+        }
+        if (instalacionNueva) {
             crearDemo();
             guardarTodo();
         } else {
-            usuarios = u; productos = p; ventas = v;
-            proveedores = pr == null ? new ArrayList<>() : pr;
-            movimientos = m == null ? new ArrayList<>() : m;
-            clientes = cl == null ? new ArrayList<>() : cl;
-            turnos = tu == null ? new ArrayList<>() : tu;
-            compras = co == null ? new ArrayList<>() : co;
+            usuarios = leerRequerido("data/usuarios.dat", Usuario.class);
+            productos = leerRequerido("data/productos.dat", Producto.class);
+            ventas = leerRequerido("data/ventas.dat", Venta.class);
+            proveedores = leerOpcional("data/proveedores.dat", Proveedor.class);
+            movimientos = leerOpcional("data/movimientos.dat", MovimientoInventario.class);
+            clientes = leerOpcional("data/clientes.dat", Cliente.class);
+            turnos = leerOpcional("data/turnos.dat", TurnoCaja.class);
+            compras = leerOpcional("data/compras.dat", CompraProveedor.class);
             migrarProductos(); // compatibilidad .dat viejos (F1)
         }
         Bitacora.registrar("Datos cargados: " + usuarios.size() + " usuarios, "
                 + productos.size() + " productos, " + ventas.size() + " ventas.");
+    }
+
+    private <T> List<T> leerRequerido(String ruta, Class<T> tipo) {
+        List<T> lista = leer(ruta, tipo);
+        if (lista == null) {
+            throw new IllegalStateException("Falta el archivo requerido " + ruta
+                    + ". No se crearon datos demo para proteger la información existente; "
+                    + "restaura un backup antes de iniciar.");
+        }
+        return lista;
+    }
+
+    private <T> List<T> leerOpcional(String ruta, Class<T> tipo) {
+        List<T> lista = leer(ruta, tipo);
+        return lista == null ? new ArrayList<>() : lista;
     }
 
     /** Migra datos viejos: defaults de producto + tablas de referencia + barras. */
@@ -186,7 +241,7 @@ public class GestorDatos {
         };
     }
 
-    public void guardarTodo() {
+    public synchronized void guardarTodo() {
         escribir("data/usuarios.dat", usuarios);
         escribir("data/productos.dat", productos);
         escribir("data/ventas.dat", ventas);
@@ -651,17 +706,17 @@ public class GestorDatos {
             }
         }
         StringBuilder sb = new StringBuilder("{\"fecha\":\"" + hoy + "\",\"ventas\":" + n
-                + ",\"anuladas\":" + anul + ",\"total\":" + String.format("%.2f", tv)
-                + ",\"ganancia\":" + String.format("%.2f", jefe ? tg : 0)
-                + ",\"deudas\":" + String.format("%.2f", jefe ? deudasTotales() : 0)
+                + ",\"anuladas\":" + anul + ",\"total\":" + String.format(Locale.ROOT, "%.2f", tv)
+                + ",\"ganancia\":" + String.format(Locale.ROOT, "%.2f", jefe ? tg : 0)
+                + ",\"deudas\":" + String.format(Locale.ROOT, "%.2f", jefe ? deudasTotales() : 0)
                 + ",\"porCaja\":[");
         boolean p = true;
         for (Map.Entry<String, double[]> e : porCaja.entrySet()) {
             if (!p) sb.append(",");
             p = false;
             sb.append("{\"vendedor\":\"").append(e.getKey()).append("\",\"n\":").append((int) e.getValue()[2])
-                    .append(",\"total\":").append(String.format("%.2f", e.getValue()[0]))
-                    .append(",\"ganancia\":").append(String.format("%.2f", jefe ? e.getValue()[1] : 0)).append("}");
+                    .append(",\"total\":").append(String.format(Locale.ROOT, "%.2f", e.getValue()[0]))
+                    .append(",\"ganancia\":").append(String.format(Locale.ROOT, "%.2f", jefe ? e.getValue()[1] : 0)).append("}");
         }
         sb.append("],\"top\":[");
         boolean q = true;

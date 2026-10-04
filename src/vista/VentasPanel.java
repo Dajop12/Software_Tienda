@@ -62,7 +62,7 @@ public class VentasPanel extends JPanel {
         JPanel turnoBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
         turnoBar.setBackground(Tema.TARJETA);
         turnoBar.setBorder(new Tema.RoundedBorder(Tema.BORDE, 12, 1));
-        lblTurno.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblTurno.setFont(Tema.fuente(Font.BOLD, 12));
         lblTurno.setForeground(Tema.TEXTO_SEC);
         cmbPago.setBackground(Tema.PANEL); cmbPago.setForeground(Tema.TEXTO);
         cmbPago.setToolTipText("CONTADO o fiado a cliente");
@@ -102,7 +102,7 @@ public class VentasPanel extends JPanel {
 
         JPanel totalBar = new JPanel(new BorderLayout());
         totalBar.setOpaque(false);
-        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTotal.setFont(Tema.fuente(Font.BOLD, 22));
         lblTotal.setForeground(Tema.VERDE);
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btns.setOpaque(false);

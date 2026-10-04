@@ -13,6 +13,7 @@ import javax.swing.*;
  * Para correr (incluye lib/ por FlatLaf):
  *   javac -encoding UTF-8 -cp "lib/*" -d bin (Get-ChildItem -Recurse -Filter *.java -Path src).FullName
  *   java -cp "bin;lib/*" App
+ *
  */
 public class App {
     public static void main(String[] args) {
@@ -27,7 +28,14 @@ public class App {
         }
         vista.Tema.initGlobales();
         // Inicializa datos (crea demo si es primera vez)
-        GestorDatos.getInstancia();
+        try {
+            GestorDatos.getInstancia();
+        } catch (IllegalStateException e) {
+            System.err.println("No se pudo iniciar la aplicación: " + e.getMessage());
+            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null,
+                    e.getMessage(), "No se pudieron cargar los datos", JOptionPane.ERROR_MESSAGE));
+            return;
+        }
         SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
 }

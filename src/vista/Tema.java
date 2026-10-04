@@ -9,142 +9,166 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * Tema oscuro centralizado — Design System nivel enterprise.
+ * Tema oscuro centralizado — paleta suave y controles accesibles.
  * Tokens + estados (hover/pressed/disabled/focus) + accesibilidad.
  * Mantiene la API anterior para no romper paneles existentes.
  */
 public class Tema {
-    // ---- Tokens de color (contraste AA sobre fondo oscuro) ----
-    public static final Color FONDO = new Color(15, 17, 23);
-    public static final Color PANEL = new Color(24, 27, 35);
-    public static final Color TARJETA = new Color(30, 34, 46);
-    public static final Color TARJETA_HOVER = new Color(37, 42, 57);
-    public static final Color BORDE = new Color(52, 58, 74);
-    public static final Color BORDE_FOCO = new Color(82, 141, 255);
-    public static final Color TEXTO = new Color(235, 237, 245);
-    public static final Color TEXTO_SEC = new Color(160, 168, 186);
-    public static final Color ACENTO = new Color(59, 130, 255);
-    public static final Color ACENTO_HOVER = new Color(42, 110, 235);
-    public static final Color ACENTO_PRESSED = new Color(30, 92, 210);
-    public static final Color VERDE = new Color(52, 211, 132);
-    public static final Color VERDE_BG = new Color(52, 211, 132, 22);
-    public static final Color ROJO = new Color(255, 107, 107);
-    public static final Color ROJO_BG = new Color(255, 107, 107, 20);
-    public static final Color AMARILLO = new Color(251, 191, 36);
-    public static final Color AMARILLO_BG = new Color(251, 191, 36, 18);
-    public static final Color INFO_BG = new Color(59, 130, 255, 18);
+    private static final String FAMILIA_UI = resolverFamilia(
+            "Arial Black", "Inter", "Segoe UI Variable", "Segoe UI", "Aptos", "Noto Sans", "Arial", "Dialog");
+    private static final String FAMILIA_MONO = resolverFamilia(
+            "Cascadia Code", "Cascadia Mono", "Consolas", "DejaVu Sans Mono", "Monospaced");
 
-    // ---- Botones: fondos oscuros + texto casi blanco (contraste AA ≥ 4.5:1) ----
-    // El ACENTO brillante se reserva para iconos/acentos; en botones se vería lavado.
-    public static final Color PRIMARIO_BG = new Color(28, 86, 201);
-    public static final Color PRIMARIO_HOVER = new Color(23, 72, 168);
-    public static final Color PRIMARIO_PRESSED = new Color(18, 58, 134);
-    public static final Color SEC_BG = new Color(46, 52, 70);
-    public static final Color SEC_HOVER = new Color(58, 65, 87);
-    public static final Color SEC_PRESSED = new Color(52, 58, 74);
+    // ---- Tokens de color (Paleta Moderna: Deep Night & Electric Blue) ----
+    public static final Color FONDO = new Color(18, 22, 30);
+    public static final Color PANEL = new Color(28, 35, 48);
+    public static final Color TARJETA = new Color(38, 46, 62);
+    public static final Color TARJETA_HOVER = new Color(48, 58, 78);
+    public static final Color BORDE = new Color(55, 68, 88);
+    public static final Color BORDE_FOCO = new Color(0, 163, 255);
+    public static final Color TEXTO = new Color(245, 247, 250);
+    public static final Color TEXTO_SEC = new Color(155, 170, 190);
+    public static final Color ACENTO = new Color(0, 140, 255);
+    public static final Color ACENTO_HOVER = new Color(0, 163, 255);
+    public static final Color ACENTO_PRESSED = new Color(0, 110, 210);
+    public static final Color VERDE = new Color(46, 204, 113);
+    public static final Color VERDE_BG = new Color(46, 204, 113, 30);
+    public static final Color ROJO = new Color(231, 76, 60);
+    public static final Color ROJO_BG = new Color(231, 76, 60, 30);
+    public static final Color AMARILLO = new Color(241, 196, 15);
+    public static final Color AMARILLO_BG = new Color(241, 196, 15, 30);
+    public static final Color INFO_BG = new Color(0, 140, 255, 30);
+
+    // ---- Botones: colores suaves con estados visibles de interacción ----
+    public static final Color PRIMARIO_BG = new Color(37, 111, 151);
+    public static final Color PRIMARIO_HOVER = new Color(42, 132, 170);
+    public static final Color PRIMARIO_PRESSED = new Color(32, 94, 127);
+    public static final Color SEC_BG = new Color(52, 63, 81);
+    public static final Color SEC_HOVER = new Color(66, 81, 103);
+    public static final Color SEC_PRESSED = new Color(44, 55, 72);
+    public static final Color PELIGRO_BG = new Color(116, 54, 63);
+    public static final Color PELIGRO_HOVER = new Color(143, 64, 74);
+    public static final Color PELIGRO_PRESSED = new Color(96, 44, 53);
     public static final Color BTN_TEXTO = new Color(255, 255, 255);
     public static final Color SEC_TEXTO = new Color(244, 246, 252);
-    public static final Color NAV_TEXTO = new Color(198, 205, 224);
-    public static final Color PELIGRO_FG = new Color(255, 133, 133);
-    public static final Color DISABLED_BG = new Color(58, 63, 82);
-    public static final Color DISABLED_FG = new Color(194, 201, 219);
+    public static final Color NAV_TEXTO = new Color(208, 218, 231);
+    public static final Color PELIGRO_FG = new Color(255, 232, 232);
+    public static final Color DISABLED_BG = new Color(61, 69, 84);
+    public static final Color DISABLED_FG = new Color(194, 204, 218);
 
     // ---- Espaciado / radio ----
     public static final int R_SM = 8, R_MD = 12, R_LG = 16;
     public static final int S_XS = 6, S_SM = 10, S_MD = 16, S_LG = 24;
 
-    public static final Font TITULO = new Font("Segoe UI", Font.BOLD, 24);
-    public static final Font SUB = new Font("Segoe UI", Font.PLAIN, 13);
-    public static final Font ETIQ = new Font("Segoe UI", Font.BOLD, 12);
-    public static final Font CAMPO = new Font("Segoe UI", Font.PLAIN, 14);
-    public static final Font BOTON = new Font("Segoe UI", Font.BOLD, 13);
+    public static final Font TITULO = fuente(Font.BOLD, 24);
+    public static final Font SUB = fuente(Font.PLAIN, 13);
+    public static final Font ETIQ = fuente(Font.BOLD, 12);
+    public static final Font CAMPO = fuente(Font.PLAIN, 14);
+    public static final Font BOTON = fuente(Font.BOLD, 13);
+
+    public static Font fuente(int estilo, int tamano) {
+        return new Font(FAMILIA_UI, estilo, tamano);
+    }
+
+    public static Font fuenteMono(int estilo, int tamano) {
+        return new Font(FAMILIA_MONO, estilo, tamano);
+    }
+
+    private static String resolverFamilia(String... candidatas) {
+        java.util.Set<String> instaladas = new java.util.HashSet<>(
+                java.util.Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
+        for (String candidata : candidatas) {
+            if (instaladas.contains(candidata)) return candidata;
+        }
+        return "Dialog";
+    }
 
     public static void botonPrimario(JButton b) {
-        if (b.getClientProperty("tema-primario") != null) return;
-        b.putClientProperty("tema-primario", true);
-        b.setFont(BOTON);
-        b.setForeground(BTN_TEXTO);
-        b.setBackground(PRIMARIO_BG);
-        b.setFocusPainted(false);
-        b.setFocusable(true);
-        // Garantiza que el LAF pinte NUESTRO fondo y no el nativo
-        b.setOpaque(true);
-        b.setContentAreaFilled(true);
-        b.setBorderPainted(true);
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        b.setBorder(new RoundedBorder(PRIMARIO_BG, R_MD, 0));
-        b.setPreferredSize(new Dimension(0, 42));
-        // Estado deshabilitado legible (gris claro sobre gris medio)
-        b.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) {
-                if (b.isEnabled()) { b.setBackground(PRIMARIO_HOVER); b.setBorder(new RoundedBorder(PRIMARIO_HOVER, R_MD, 0)); }
-            }
-            @Override public void mouseExited(MouseEvent e) {
-                if (b.isEnabled()) { b.setBackground(PRIMARIO_BG); b.setBorder(new RoundedBorder(PRIMARIO_BG, R_MD, 0)); }
-            }
-            @Override public void mousePressed(MouseEvent e) {
-                if (b.isEnabled()) { b.setBackground(PRIMARIO_PRESSED); b.setBorder(new RoundedBorder(PRIMARIO_PRESSED, R_MD, 0)); }
-            }
-            @Override public void mouseReleased(MouseEvent e) {
-                if (b.isEnabled()) { b.setBackground(PRIMARIO_HOVER); b.setBorder(new RoundedBorder(PRIMARIO_HOVER, R_MD, 0)); }
-            }
-        });
-        b.addPropertyChangeListener("enabled", e -> {
-            if (!b.isEnabled()) { b.setBackground(DISABLED_BG); b.setForeground(DISABLED_FG); }
-            else { b.setBackground(PRIMARIO_BG); b.setForeground(BTN_TEXTO); }
-        });
+        configurarBoton(b, "primario");
     }
 
     public static void botonSecundario(JButton b) {
-        if (b.getClientProperty("tema-sec") != null) return;
-        b.putClientProperty("tema-sec", true);
-        b.setFont(BOTON);
-        b.setForeground(SEC_TEXTO);
-        b.setBackground(SEC_BG);
-        b.setFocusPainted(false);
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        b.setOpaque(true);
-        b.setContentAreaFilled(true);
-        b.setBorderPainted(true);
-        b.setBorder(new RoundedBorder(SEC_BG, R_MD, 0));
-        b.setPreferredSize(new Dimension(0, 38));
-        b.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) { if (b.isEnabled()) b.setBackground(SEC_HOVER); }
-            @Override public void mouseExited(MouseEvent e) { if (b.isEnabled()) b.setBackground(SEC_BG); }
-            @Override public void mousePressed(MouseEvent e) { if (b.isEnabled()) b.setBackground(SEC_PRESSED); }
-        });
-        b.addPropertyChangeListener("enabled", e -> {
-            if (!b.isEnabled()) { b.setBackground(DISABLED_BG); b.setForeground(DISABLED_FG); }
-            else { b.setBackground(SEC_BG); b.setForeground(SEC_TEXTO); }
-        });
+        configurarBoton(b, "secundario");
     }
 
     /** Botón de peligro (eliminar) con affordance clara. */
     public static void botonPeligro(JButton b) {
-        botonSecundario(b);
-        b.setForeground(PELIGRO_FG);
-        b.addPropertyChangeListener("enabled", e -> {
-            if (!b.isEnabled()) { b.setForeground(DISABLED_FG); }
-            else { b.setForeground(PELIGRO_FG); }
-        });
+        configurarBoton(b, "peligro");
+    }
+
+    private static void configurarBoton(JButton b, String estilo) {
+        b.putClientProperty("tema-estilo", estilo);
+        b.setFont(BOTON);
+        b.setFocusPainted(false);
+        b.setFocusable(true);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        b.setOpaque(true);
+        b.setContentAreaFilled(true);
+        b.setBorderPainted(true);
+        b.setMargin(new Insets(9, 16, 9, 16));
+        b.setMinimumSize(new Dimension(0, 40));
+        if (!Boolean.TRUE.equals(b.getClientProperty("tema-listeners"))) {
+            b.putClientProperty("tema-listeners", true);
+            b.getModel().addChangeListener(e -> actualizarBoton(b));
+            b.addFocusListener(new java.awt.event.FocusAdapter() {
+                @Override public void focusGained(java.awt.event.FocusEvent e) { actualizarBoton(b); }
+                @Override public void focusLost(java.awt.event.FocusEvent e) { actualizarBoton(b); }
+            });
+            b.addPropertyChangeListener("enabled", e -> actualizarBoton(b));
+        }
+        actualizarBoton(b);
+    }
+
+    private static void actualizarBoton(JButton b) {
+        String estilo = (String) b.getClientProperty("tema-estilo");
+        Color normal, hover, presionado, texto;
+        if ("primario".equals(estilo)) {
+            normal = PRIMARIO_BG; hover = PRIMARIO_HOVER; presionado = PRIMARIO_PRESSED; texto = BTN_TEXTO;
+        } else if ("peligro".equals(estilo)) {
+            normal = PELIGRO_BG; hover = PELIGRO_HOVER; presionado = PELIGRO_PRESSED; texto = PELIGRO_FG;
+        } else {
+            normal = SEC_BG; hover = SEC_HOVER; presionado = SEC_PRESSED; texto = SEC_TEXTO;
+        }
+        ButtonModel model = b.getModel();
+        Color fondo = !b.isEnabled() ? DISABLED_BG
+                : model.isPressed() && model.isArmed() ? presionado
+                : model.isRollover() ? hover : normal;
+        b.setBackground(fondo);
+        b.setForeground(b.isEnabled() ? texto : DISABLED_FG);
+        b.setBorder(new RoundedBorder(b.hasFocus() ? BORDE_FOCO : fondo, R_MD, b.hasFocus() ? 2 : 1));
     }
 
     public static void botonSidebar(JButton b, boolean activo) {
-        b.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        b.putClientProperty("tema-nav-activo", activo);
+        b.setFont(fuente(Font.BOLD, 13));
         b.setHorizontalAlignment(SwingConstants.LEFT);
         b.setFocusPainted(true); // accesible por teclado
         b.setFocusable(true);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        b.setBorder(BorderFactory.createEmptyBorder(10, 16, 10, 16));
         b.setOpaque(true);
         b.setContentAreaFilled(true);
-        if (activo) {
-            b.setBackground(PRIMARIO_BG);
-            b.setForeground(BTN_TEXTO);
-        } else {
-            b.setBackground(PANEL);
-            b.setForeground(NAV_TEXTO);
+        if (!Boolean.TRUE.equals(b.getClientProperty("tema-nav-listeners"))) {
+            b.putClientProperty("tema-nav-listeners", true);
+            b.getModel().addChangeListener(e -> actualizarSidebar(b));
+            b.addFocusListener(new java.awt.event.FocusAdapter() {
+                @Override public void focusGained(java.awt.event.FocusEvent e) { actualizarSidebar(b); }
+                @Override public void focusLost(java.awt.event.FocusEvent e) { actualizarSidebar(b); }
+            });
         }
+        actualizarSidebar(b);
+    }
+
+    private static void actualizarSidebar(JButton b) {
+        boolean activo = Boolean.TRUE.equals(b.getClientProperty("tema-nav-activo"));
+        ButtonModel model = b.getModel();
+        Color fondo = activo ? PRIMARIO_BG : model.isRollover() ? TARJETA_HOVER : PANEL;
+        if (model.isPressed() && model.isArmed()) fondo = activo ? PRIMARIO_PRESSED : SEC_PRESSED;
+        b.setBackground(fondo);
+        b.setForeground(activo ? BTN_TEXTO : NAV_TEXTO);
+        b.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, activo ? 3 : 0, 0, 0,
+                        activo ? BORDE_FOCO : fondo),
+                BorderFactory.createEmptyBorder(10, activo ? 13 : 16, 10, 16)));
     }
 
     public static void campo(JTextField c) {
@@ -186,7 +210,7 @@ public class Tema {
         t.setShowVerticalLines(false);
         t.setIntercellSpacing(new Dimension(0, 1));
         t.setRowHeight(32);
-        t.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        t.setFont(fuente(Font.PLAIN, 12));
         t.setSelectionBackground(new Color(59, 130, 255, 70));
         t.setSelectionForeground(Color.WHITE);
         t.setFillsViewportHeight(true);
@@ -194,7 +218,7 @@ public class Tema {
         JTableHeader h = t.getTableHeader();
         h.setBackground(new Color(21, 24, 32));
         h.setForeground(TEXTO_SEC);
-        h.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        h.setFont(fuente(Font.BOLD, 11));
         h.setPreferredSize(new Dimension(0, 34));
         h.setReorderingAllowed(false);
         ((DefaultTableCellRenderer) h.getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
@@ -221,7 +245,7 @@ public class Tema {
     /** Badge de estado (Aprobado, ADMIN, Stock bajo…). */
     public static JLabel badge(String texto, Color fg, Color bg) {
         JLabel l = new JLabel(texto, SwingConstants.CENTER);
-        l.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        l.setFont(fuente(Font.BOLD, 11));
         l.setForeground(fg);
         l.setBackground(bg);
         l.setOpaque(true);
@@ -238,7 +262,7 @@ public class Tema {
         if (partes.length == 1) ini = partes[0].substring(0, Math.min(1, partes[0].length())).toUpperCase();
         else ini = (partes[0].substring(0, 1) + partes[1].substring(0, 1)).toUpperCase();
         JLabel l = new JLabel(ini, SwingConstants.CENTER);
-        l.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        l.setFont(fuente(Font.BOLD, 13));
         l.setForeground(BTN_TEXTO);
         l.setBackground(PRIMARIO_BG);
         l.setOpaque(true);
@@ -249,7 +273,14 @@ public class Tema {
 
     /** Aplica look oscuro a dialogs/tooltips para coherencia. Llamar una vez al arrancar. */
     public static void initGlobales() {
-        UIManager.put("ToolTip.background", new Color(30, 34, 46));
+        Font base = fuente(Font.PLAIN, 13);
+        UIManager.put("defaultFont", base);
+        for (String componente : new String[]{"Label", "Button", "ToggleButton", "TextField",
+                "PasswordField", "TextArea", "ComboBox", "CheckBox", "RadioButton",
+                "Table", "TableHeader", "TabbedPane", "Menu", "MenuItem", "OptionPane"}) {
+            UIManager.put(componente + ".font", base);
+        }
+        UIManager.put("ToolTip.background", TARJETA);
         UIManager.put("ToolTip.foreground", TEXTO);
         UIManager.put("ToolTip.border", BorderFactory.createLineBorder(BORDE));
         UIManager.put("OptionPane.background", PANEL);
@@ -287,18 +318,18 @@ public class Tema {
         JPanel top = new JPanel(new BorderLayout());
         top.setOpaque(false);
         JLabel ic = new JLabel(icono);
-        ic.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        ic.setFont(fuente(Font.PLAIN, 16));
         ic.setForeground(acento);
         JLabel t = new JLabel("  " + titulo);
-        t.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        t.setFont(fuente(Font.BOLD, 11));
         t.setForeground(TEXTO_SEC);
         top.add(ic, BorderLayout.WEST);
         top.add(t, BorderLayout.CENTER);
         JLabel v = new JLabel(valor);
-        v.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        v.setFont(fuente(Font.BOLD, 26));
         v.setForeground(Color.WHITE);
         JLabel d = new JLabel(detalle);
-        d.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        d.setFont(fuente(Font.PLAIN, 12));
         d.setForeground(acento);
         // barrita de color
         JPanel barra = new JPanel();

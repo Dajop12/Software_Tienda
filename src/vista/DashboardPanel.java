@@ -69,7 +69,7 @@ public class DashboardPanel extends JPanel {
         JList<String> log = new JList<>(modeloLog);
         log.setBackground(Tema.TARJETA);
         log.setForeground(Tema.TEXTO_SEC);
-        log.setFont(new Font("Consolas", Font.PLAIN, 11));
+        log.setFont(Tema.fuenteMono(Font.PLAIN, 11));
         logCard.add(lt, BorderLayout.NORTH);
         logCard.add(new JScrollPane(log), BorderLayout.CENTER);
         add(logCard, BorderLayout.SOUTH);
@@ -128,7 +128,7 @@ public class DashboardPanel extends JPanel {
             for (double v : datos) if (v > 0) { vacia = false; break; }
             if (vacia) {
                 g2.setColor(Tema.TEXTO_SEC);
-                g2.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                g2.setFont(Tema.fuente(Font.PLAIN, 12));
                 String m = "Sin ventas esta semana — cobra en Punto de venta";
                 int tw = g2.getFontMetrics().stringWidth(m);
                 g2.drawString(m, (w - tw) / 2, h / 2);
@@ -146,12 +146,12 @@ public class DashboardPanel extends JPanel {
                 g2.setPaint(gp);
                 g2.fillRoundRect(x, y, anchoBarra, alto, 8, 8);
                 g2.setColor(Tema.TEXTO_SEC);
-                g2.setFont(new Font("Segoe UI", Font.PLAIN, 10));
+                g2.setFont(Tema.fuente(Font.PLAIN, 10));
                 String et = etiquetas[i] == null ? "" : etiquetas[i];
                 g2.drawString(et, x, h - 12);
                 if (datos[i] > 0) {
                     g2.setColor(Color.WHITE);
-                    g2.setFont(new Font("Segoe UI", Font.BOLD, 10));
+                    g2.setFont(Tema.fuente(Font.BOLD, 10));
                     g2.drawString(String.format("%.0f", datos[i]), x, y - 4);
                 }
             }

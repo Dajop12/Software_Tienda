@@ -45,7 +45,7 @@ public class UsuariosPanel extends JPanel {
 
         JLabel nota = new JLabel("Roles: ADMIN = todo • VENDEDOR = ventas/productos • CONSULTA = solo ver. No puedes eliminarte a ti mismo.");
         nota.setForeground(Tema.TEXTO_SEC);
-        nota.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        nota.setFont(Tema.fuente(Font.PLAIN, 11));
         add(nota, BorderLayout.SOUTH);
     }
 

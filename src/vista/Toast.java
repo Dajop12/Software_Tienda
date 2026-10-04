@@ -33,7 +33,7 @@ public class Toast {
                 new Tema.RoundedBorder(borde, 12, 1),
                 BorderFactory.createEmptyBorder(10, 14, 10, 14)));
         JLabel l = new JLabel(icono + mensaje);
-        l.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        l.setFont(Tema.fuente(Font.BOLD, 12));
         l.setForeground(Color.WHITE);
         p.add(l, BorderLayout.CENTER);
         popup.add(p);

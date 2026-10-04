@@ -69,18 +69,18 @@ public class LoginFrame extends JFrame {
                 new Tema.RoundedBorder(new Color(255, 255, 255, 90), 12, 1),
                 BorderFactory.createEmptyBorder(12, 14, 12, 14)));
         JLabel a = new JLabel("🔑  Demo: admin / 1234");
-        a.setForeground(Color.WHITE); a.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        a.setForeground(Color.WHITE); a.setFont(Tema.fuente(Font.BOLD, 13));
         JLabel b = new JLabel("Vendedor: ana / 1234");
-        b.setForeground(new Color(232, 234, 246)); b.setFont(new Font("Consolas", Font.PLAIN, 12));
+        b.setForeground(new Color(232, 234, 246)); b.setFont(Tema.fuenteMono(Font.PLAIN, 12));
         JLabel c = new JLabel("Consulta: invitado / 1234");
-        c.setForeground(new Color(232, 234, 246)); c.setFont(new Font("Consolas", Font.PLAIN, 12));
+        c.setForeground(new Color(232, 234, 246)); c.setFont(Tema.fuenteMono(Font.PLAIN, 12));
         card.add(a); card.add(b); card.add(c);
         g.gridy = 3; g.insets = new Insets(0, 0, 14, 0);
         p.add(card, g);
 
         // Pie decorativo con versión
         JLabel pie = new JLabel("v2.0 Enterprise  •  Soporte local  •  PC + APK");
-        pie.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        pie.setFont(Tema.fuente(Font.PLAIN, 11));
         pie.setForeground(new Color(197, 202, 233));
         g.gridy = 4; g.insets = new Insets(0, 0, 0, 0);
         p.add(pie, g);
@@ -128,10 +128,10 @@ public class LoginFrame extends JFrame {
         JPanel marca = new JPanel(new BorderLayout());
         marca.setOpaque(false);
         JLabel logo = new JLabel("◉  SUPER APP");
-        logo.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        logo.setFont(Tema.fuente(Font.BOLD, 12));
         logo.setForeground(Tema.ACENTO);
         JLabel lblVer = new JLabel("v2.0");
-        lblVer.setFont(new Font("Consolas", Font.PLAIN, 11));
+        lblVer.setFont(Tema.fuenteMono(Font.PLAIN, 11));
         lblVer.setForeground(Tema.TEXTO_SEC);
         marca.add(logo, BorderLayout.WEST);
         marca.add(lblVer, BorderLayout.EAST);
@@ -153,7 +153,7 @@ public class LoginFrame extends JFrame {
         barraWrap.add(barra);
         gb.gridy = y++; gb.insets = new Insets(0, 0, 14, 0); p.add(barraWrap, gb);
 
-        lblMsg.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblMsg.setFont(Tema.fuente(Font.BOLD, 12));
         lblMsg.setForeground(Tema.ROJO);
         gb.gridy = y++; gb.insets = new Insets(0, 0, 8, 0); p.add(lblMsg, gb);
 
@@ -179,12 +179,12 @@ public class LoginFrame extends JFrame {
         extra.setOpaque(false);
         JCheckBox ver = new JCheckBox("Mostrar");
         ver.setOpaque(false); ver.setForeground(Tema.TEXTO_SEC);
-        ver.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        ver.setFont(Tema.fuente(Font.PLAIN, 12));
         ver.setToolTipText("Mostrar / ocultar contraseña");
         ver.setMnemonic('M');
         ver.addActionListener(e -> txtPass.setEchoChar(ver.isSelected() ? (char) 0 : '•'));
         lblIntentos.setForeground(Tema.TEXTO_SEC);
-        lblIntentos.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblIntentos.setFont(Tema.fuente(Font.PLAIN, 12));
         extra.add(ver, BorderLayout.WEST); extra.add(lblIntentos, BorderLayout.EAST);
         gb.gridy = y++; gb.insets = new Insets(0, 0, 14, 0); p.add(extra, gb);
 

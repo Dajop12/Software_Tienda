@@ -1,5 +1,42 @@
-plugins { id("com.android.application"); id("org.jetbrains.kotlin.android"); id("com.google.gms.google-services") }
-android { namespace = "com.tienda.jefe"; compileSdk = 34
-  defaultConfig { applicationId = "com.tienda.jefe"; minSdk = 26; targetSdk = 34; versionCode = 1; versionName = "1.0" }
-  buildTypes { release { isMinifyEnabled = true } } }
-dependencies { implementation("com.google.firebase:firebase-messaging:23.4.1") }
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.tienda.jefe"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.tienda.jefe"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+        }
+    }
+}
+
+if (file("google-services.json").exists()) {
+    apply plugin: "com.google.gms.google-services"
+}
+
+dependencies {
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("com.google.firebase:firebase-messaging:23.4.1")
+}
